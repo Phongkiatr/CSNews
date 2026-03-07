@@ -1,0 +1,20 @@
+# ── .NET ────────────────────────────────────────────────
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
+
+# ── React ────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# ── Uploads ──────────────────────────────────────────────
+backend/uploads/
+
+# ── OS ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
