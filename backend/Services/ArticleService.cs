@@ -21,12 +21,16 @@ public interface IArticleService
 {
     Task<PagedResponse<ArticleListResponse>> GetPublishedAsync(int page, int pageSize, int? categoryId, string? search);
     Task<PagedResponse<ArticleListResponse>> GetAllAsync(int page, int pageSize, string? status);
+    Task<PagedResponse<ArticleListResponse>> GetMyArticlesAsync(int userId, int page, int pageSize, string? status);
+
     Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated);
     Task<ArticleDetailResponse> GetByIdAsync(int id);
     Task<ArticleDetailResponse> CreateAsync(CreateArticleRequest req, int authorId);
     Task<ArticleDetailResponse> UpdateAsync(int id, UpdateArticleRequest req, int userId, string role);
     Task DeleteAsync(int id, int userId, string role);
     Task PublishAsync(int id);
+
+
 }
 
 public class ArticleService(AppDbContext db) : IArticleService
@@ -48,6 +52,21 @@ public class ArticleService(AppDbContext db) : IArticleService
             q = q.Where(a => a.Title.Contains(search) || a.Summary.Contains(search));
 
         return await ToPagedAsync(q.OrderByDescending(a => a.PublishedAt), page, pageSize);
+    }
+
+    public async Task<PagedResponse<ArticleListResponse>> GetMyArticlesAsync(
+    int userId, int page, int pageSize, string? status)
+    {
+        var q = db.Articles
+            .Include(a => a.Author)
+            .Include(a => a.Category)
+            .Include(a => a.ArticleTags).ThenInclude(at => at.Tag)
+            .Where(a => a.AuthorId == userId);
+
+        if (!string.IsNullOrWhiteSpace(status))
+            q = q.Where(a => a.Status == status);
+
+        return await ToPagedAsync(q.OrderByDescending(a => a.CreatedAt), page, pageSize);
     }
 
     // ── Admin: ดูทุกสถานะ ────────────────────────────────────
@@ -112,14 +131,14 @@ public class ArticleService(AppDbContext db) : IArticleService
 
         var article = new Article
         {
-            Title      = req.Title,
-            Slug       = slug,
-            Summary    = req.Summary,
-            Content    = req.Content,
+            Title = req.Title,
+            Slug = slug,
+            Summary = req.Summary,
+            Content = req.Content,
             CategoryId = req.CategoryId,
-            AuthorId   = authorId,
+            AuthorId = authorId,
             IsFeatured = req.IsFeatured,
-            Status     = "Draft"
+            Status = "Draft"
         };
 
         // สร้าง Tag อัตโนมัติถ้ายังไม่มี
@@ -153,12 +172,15 @@ public class ArticleService(AppDbContext db) : IArticleService
         if (role != "Admin" && article.AuthorId != userId)
             throw new UnauthorizedAccessException("ไม่มีสิทธิ์แก้ไขบทความนี้");
 
-        article.Title      = req.Title;
-        article.Summary    = req.Summary;
-        article.Content    = req.Content;
+        article.Title = req.Title;
+        article.Summary = req.Summary;
+        article.Content = req.Content;
         article.CategoryId = req.CategoryId;
         article.IsFeatured = req.IsFeatured;
-        article.UpdatedAt  = DateTime.UtcNow;
+        article.UpdatedAt = DateTime.UtcNow;
+
+        if (req.ThumbnailUrl != null)
+            article.ThumbnailUrl = req.ThumbnailUrl;
 
         if (req.Status == "Published" && article.Status != "Published")
             article.PublishedAt = DateTime.UtcNow;
@@ -200,7 +222,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         var article = await db.Articles.FindAsync(id)
             ?? throw new KeyNotFoundException("ไม่พบบทความ");
 
-        article.Status      = "Published";
+        article.Status = "Published";
         article.PublishedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
     }

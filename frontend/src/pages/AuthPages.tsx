@@ -1,22 +1,10 @@
 import { useState } from 'react';
-import type { PageName } from '../types';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuthStore } from '../store/useAuthStore';
 
-interface LoginProps {
-  onSuccess: () => void;
-  onNavigate: (p: PageName) => void;
-  login: (email: string, password: string) => Promise<void>;
-  isLoading: boolean;
-}
-
-interface RegisterProps {
-  onSuccess: () => void;
-  onNavigate: (p: PageName) => void;
-  register: (username: string, email: string, password: string) => Promise<void>;
-  isLoading: boolean;
-}
-
-// ── Login ─────────────────────────────────────────────────────────────────────
-export function LoginPage({ onSuccess, onNavigate, login, isLoading }: LoginProps) {
+export function LoginPage() {
+  const navigate = useNavigate();
+  const { login, isLoading } = useAuthStore();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
@@ -26,100 +14,100 @@ export function LoginPage({ onSuccess, onNavigate, login, isLoading }: LoginProp
     setError('');
     try {
       await login(email, password);
-      onSuccess();
+      navigate('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'เข้าสู่ระบบไม่สำเร็จ');
     }
   };
 
   return (
-    <AuthShell title="เข้าสู่ระบบ" subtitle="กลับมาอ่านข่าวที่คุณชอบ">
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-xs text-amber-800"
-        style={{ fontFamily: "'DM Mono',monospace" }}>
-        <p className="font-bold mb-1">ⓘ ต้องรัน .NET API ก่อน</p>
-        <p>POST /api/auth/login</p>
-        <p>POST /api/auth/register</p>
-      </div>
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-        {error && <ErrorBox>{error}</ErrorBox>}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <Field label="อีเมล">
-            <input type="email" value={email} required placeholder="your@email.com"
-              onChange={(e) => setEmail(e.target.value)} className={inputCls} />
-          </Field>
-          <Field label="รหัสผ่าน">
-            <input type="password" value={password} required placeholder="••••••••"
-              onChange={(e) => setPassword(e.target.value)} className={inputCls} />
-          </Field>
-          <SubmitBtn loading={isLoading} label="เข้าสู่ระบบ" />
-        </form>
-        <p className="text-center text-sm text-slate-500 mt-5">
+    <AuthShell title="เข้าสู่ระบบ" subtitle="ยินดีต้อนรับกลับ">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && <ErrorBox msg={error} />}
+        <Field label="อีเมล">
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            required placeholder="your@email.com" className={inputCls} />
+        </Field>
+        <Field label="รหัสผ่าน">
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+            required placeholder="••••••••" className={inputCls} />
+        </Field>
+        <button type="submit" disabled={isLoading} className={btnCls}>
+          {isLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+        </button>
+        <p className="text-center text-sm text-slate-500">
           ยังไม่มีบัญชี?{' '}
-          <button onClick={() => onNavigate('register')} className="text-amber-600 font-semibold hover:underline">
-            สมัครสมาชิก
-          </button>
+          <Link to="/register" className="text-amber-600 font-semibold hover:underline">สมัครสมาชิก</Link>
         </p>
-      </div>
+      </form>
     </AuthShell>
   );
 }
 
-// ── Register ──────────────────────────────────────────────────────────────────
-export function RegisterPage({ onSuccess, onNavigate, register, isLoading }: RegisterProps) {
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '' });
-  const [error, setError] = useState('');
-
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((p) => ({ ...p, [k]: e.target.value }));
+export function RegisterPage() {
+  const navigate = useNavigate();
+  const { register, isLoading } = useAuthStore();
+  const [username, setUsername] = useState('');
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [error,    setError]    = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirm) { setError('รหัสผ่านไม่ตรงกัน'); return; }
-    if (form.password.length < 8)       { setError('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'); return; }
     try {
-      await register(form.username, form.email, form.password);
-      onSuccess();
+      await register(username, email, password);
+      navigate('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'สมัครสมาชิกไม่สำเร็จ');
     }
   };
 
   return (
-    <AuthShell title="สมัครสมาชิก" subtitle="เริ่มต้นติดตามข่าวที่คุณสนใจ">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-        {error && <ErrorBox>{error}</ErrorBox>}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <Field label="ชื่อผู้ใช้"><input type="text"     value={form.username} required placeholder="username"        onChange={set('username')} className={inputCls} /></Field>
-          <Field label="อีเมล">      <input type="email"    value={form.email}    required placeholder="your@email.com" onChange={set('email')}    className={inputCls} /></Field>
-          <Field label="รหัสผ่าน">   <input type="password" value={form.password} required placeholder="อย่างน้อย 8 ตัว"  onChange={set('password')} className={inputCls} /></Field>
-          <Field label="ยืนยันรหัส"> <input type="password" value={form.confirm}  required placeholder="••••••••"        onChange={set('confirm')}  className={inputCls} /></Field>
-          <SubmitBtn loading={isLoading} label="สมัครสมาชิก" />
-        </form>
-        <p className="text-center text-sm text-slate-500 mt-5">
+    <AuthShell title="สมัครสมาชิก" subtitle="สร้างบัญชีใหม่">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && <ErrorBox msg={error} />}
+        <Field label="ชื่อผู้ใช้">
+          <input value={username} onChange={e => setUsername(e.target.value)}
+            required placeholder="username" className={inputCls} />
+        </Field>
+        <Field label="อีเมล">
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            required placeholder="your@email.com" className={inputCls} />
+        </Field>
+        <Field label="รหัสผ่าน">
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+            required placeholder="อย่างน้อย 6 ตัวอักษร" minLength={6} className={inputCls} />
+        </Field>
+        <button type="submit" disabled={isLoading} className={btnCls}>
+          {isLoading ? 'กำลังสมัคร...' : 'สมัครสมาชิก'}
+        </button>
+        <p className="text-center text-sm text-slate-500">
           มีบัญชีแล้ว?{' '}
-          <button onClick={() => onNavigate('login')} className="text-amber-600 font-semibold hover:underline">
-            เข้าสู่ระบบ
-          </button>
+          <Link to="/login" className="text-amber-600 font-semibold hover:underline">เข้าสู่ระบบ</Link>
         </p>
-      </div>
+      </form>
     </AuthShell>
   );
 }
 
-// ── Shared ────────────────────────────────────────────────────────────────────
-const inputCls = 'w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all';
+// ── Shared components ────────────────────────────────────────
+const inputCls = "w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all";
+const btnCls   = "w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors";
 
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-slate-50"
-      style={{ fontFamily: "'DM Sans',sans-serif" }}>
+    <div className="min-h-[70vh] flex items-center justify-center px-6" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "'Playfair Display',serif" }}>{title}</h1>
+          <Link to="/" className="text-3xl font-black text-slate-900 hover:text-amber-600 transition-colors"
+            style={{ fontFamily: "'Playfair Display',serif" }}>
+            CSNews
+          </Link>
+          <h1 className="text-xl font-bold text-slate-900 mt-4">{title}</h1>
           <p className="text-slate-500 text-sm mt-1">{subtitle}</p>
         </div>
-        {children}
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">{children}</div>
       </div>
     </div>
   );
@@ -134,15 +122,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function ErrorBox({ children }: { children: React.ReactNode }) {
-  return <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-5">{children}</div>;
-}
-
-function SubmitBtn({ loading, label }: { loading: boolean; label: string }) {
+function ErrorBox({ msg }: { msg: string }) {
   return (
-    <button type="submit" disabled={loading}
-      className="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 disabled:opacity-60 transition-colors">
-      {loading ? 'กำลังดำเนินการ...' : label}
-    </button>
+    <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+      ⚠️ {msg}
+    </div>
   );
 }

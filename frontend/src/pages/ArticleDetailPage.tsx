@@ -1,40 +1,40 @@
 import { useState, useEffect } from 'react';
-import type { ArticleDetail, User, PageName } from '../types';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import type { ArticleDetail } from '../types';
 import { articleApi } from '../api';
 import { formatDate, formatNum, formatSize, getImageUrl } from '../utils/format';
+import { useAuthStore } from '../store/useAuthStore';
 
-interface Props {
-  slug: string;
-  user: User | null;
-  onNavigate: (p: PageName, slug?: string) => void;
-}
+export function ArticleDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
 
-export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
 
   useEffect(() => {
-    setLoading(true);
-    setError('');
+    if (!slug) return;
+    setLoading(true); setError('');
     articleApi.getBySlug(slug)
-      .then(setArticle)
+      .then(data => { setArticle(data); window.scrollTo({ top: 0 }); })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
   }, [slug]);
 
   if (loading) return <PageShell><LoadingDetail /></PageShell>;
-  if (error)   return (
+
+  if (error) return (
     <PageShell>
       <div className="text-center py-20">
         <p className="text-4xl mb-4">😔</p>
         <p className="text-lg font-semibold text-slate-700 mb-2">{error}</p>
-        <button onClick={() => onNavigate('home')} className="text-amber-600 hover:underline text-sm">
-          ← กลับหน้าแรก
-        </button>
+        <Link to="/" className="text-amber-600 hover:underline text-sm">← กลับหน้าแรก</Link>
       </div>
     </PageShell>
   );
+
   if (!article) return null;
 
   const canEdit = user && (user.role === 'Admin' || user.id === article.author.id);
@@ -44,9 +44,7 @@ export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-slate-400 mb-6"
         style={{ fontFamily: "'DM Mono',monospace" }}>
-        <button onClick={() => onNavigate('home')} className="hover:text-slate-700 transition-colors">
-          หน้าแรก
-        </button>
+        <Link to="/" className="hover:text-slate-700 transition-colors">หน้าแรก</Link>
         <span>/</span>
         <span className="text-amber-600">{article.categoryName}</span>
       </div>
@@ -65,7 +63,7 @@ export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
           </span>
         )}
         {canEdit && (
-          <button onClick={() => onNavigate('edit', article.slug)}
+          <button onClick={() => navigate(`/create?edit=${article.slug}`)}
             className="ml-auto text-xs border border-slate-300 text-slate-500 px-3 py-1 rounded-full hover:border-amber-400 hover:text-amber-600 transition-colors">
             ✏️ แก้ไข
           </button>
@@ -91,11 +89,7 @@ export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
           </div>
         </div>
         <span>·</span>
-        {article.publishedAt ? (
-          <span>📅 {formatDate(article.publishedAt)}</span>
-        ) : (
-          <span>📅 {formatDate(article.createdAt)}</span>
-        )}
+        <span>📅 {formatDate(article.publishedAt ?? article.createdAt)}</span>
         <span>·</span>
         <span>👁 {formatNum(article.viewCount)} ครั้ง</span>
       </div>
@@ -115,22 +109,22 @@ export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
       {/* Tags */}
       {article.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-8 pt-8 border-t border-slate-100">
-          {article.tags.map((t) => (
-            <span key={t} className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full hover:bg-slate-200 cursor-pointer transition-colors">
+          {article.tags.map(t => (
+            <Link key={t} to={`/?search=${t}`}
+              className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full hover:bg-slate-200 cursor-pointer transition-colors">
               #{t}
-            </span>
+            </Link>
           ))}
         </div>
       )}
 
-      {/* Attached files */}
+      {/* Files */}
       {article.files.length > 0 && (
         <div className="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-xl">
           <h3 className="font-bold text-slate-700 mb-3 text-sm">📎 ไฟล์แนบ ({article.files.length})</h3>
           <div className="space-y-2">
-            {article.files.map((f) => (
-              <a key={f.id}
-                href={getImageUrl(f.filePath)} target="_blank" rel="noopener noreferrer"
+            {article.files.map(f => (
+              <a key={f.id} href={getImageUrl(f.filePath)} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-slate-700 bg-white px-4 py-2.5 rounded-lg border border-slate-200 hover:border-amber-400 hover:text-amber-700 transition-all">
                 <span>{f.fileType === 'image' ? '🖼️' : '📄'}</span>
                 <span className="flex-1">{f.originalFileName}</span>
@@ -141,10 +135,9 @@ export function ArticleDetailPage({ slug, user, onNavigate }: Props) {
         </div>
       )}
 
-      <button onClick={() => onNavigate('home')}
-        className="mt-10 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors">
+      <Link to="/" className="mt-10 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors">
         ← กลับหน้าแรก
-      </button>
+      </Link>
     </PageShell>
   );
 }
@@ -166,7 +159,7 @@ function LoadingDetail() {
       <div className="h-64 bg-slate-200 rounded-2xl" />
       <div className="space-y-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-4 bg-slate-200 rounded" style={{ width: `${70 + Math.random() * 30}%` }} />
+          <div key={i} className="h-4 bg-slate-200 rounded" />
         ))}
       </div>
     </div>

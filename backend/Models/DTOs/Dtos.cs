@@ -65,7 +65,8 @@ public record CreateArticleRequest(
 /// <summary>Body ของ PUT /api/articles/{id}</summary>
 public record UpdateArticleRequest(
     string Title, string Summary, string Content,
-    int CategoryId, List<string>? Tags, bool IsFeatured, string Status
+    int CategoryId, List<string>? Tags, bool IsFeatured, string Status,
+    string? ThumbnailUrl = null
 );
 
 // ============================================================

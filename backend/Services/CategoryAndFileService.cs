@@ -1,4 +1,3 @@
-// ใส่ using ทั้งหมดไว้บนสุดก่อนเสมอ
 using CSNews.Data;
 using CSNews.Models.DTOs;
 using CSNews.Models.Entities;
@@ -56,9 +55,10 @@ public class FileService(IWebHostEnvironment env, AppDbContext db, ILogger<FileS
         if (Allowed.TryGetValue(folder, out var types) && !types.Contains(file.ContentType))
             throw new ArgumentException($"ไม่อนุญาตประเภทไฟล์ {file.ContentType}");
 
+        var webRoot = env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
         var ext     = Path.GetExtension(file.FileName);
         var newName = $"{Guid.NewGuid()}{ext}";
-        var dir     = Path.Combine(env.WebRootPath, "uploads", folder);
+        var dir     = Path.Combine(webRoot, "uploads", folder);
         Directory.CreateDirectory(dir);
 
         var fullPath = Path.Combine(dir, newName);
@@ -89,7 +89,8 @@ public class FileService(IWebHostEnvironment env, AppDbContext db, ILogger<FileS
 
     public Task DeleteAsync(string filePath)
     {
-        var full = Path.Combine(env.WebRootPath,
+        var webRoot = env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+        var full = Path.Combine(webRoot,
             filePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
         if (File.Exists(full)) File.Delete(full);
         return Task.CompletedTask;

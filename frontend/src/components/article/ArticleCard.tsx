@@ -1,17 +1,20 @@
-import type { ArticleListItem, PageName } from '../../types';
+import { useNavigate } from 'react-router-dom';
+import type { ArticleListItem } from '../../types';
 import { formatDate, formatNum, getImageUrl } from '../../utils/format';
 
 interface Props {
   article: ArticleListItem;
   variant?: 'hero' | 'featured' | 'default';
-  onNavigate: (p: PageName, slug?: string) => void;
 }
 
-export function ArticleCard({ article, variant = 'default', onNavigate }: Props) {
+export function ArticleCard({ article, variant = 'default' }: Props) {
+  const navigate = useNavigate();
+  const go = () => navigate(`/articles/${article.slug}`);
+
   if (variant === 'hero' || variant === 'featured') {
     const isHero = variant === 'hero';
     return (
-      <button onClick={() => onNavigate('detail', article.slug)}
+      <button onClick={go}
         className="group text-left rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl hover:border-slate-300 transition-all w-full">
         <div className={`relative overflow-hidden ${isHero ? 'h-72 md:h-96' : 'h-52'}`}>
           {article.thumbnailUrl ? (
@@ -44,8 +47,8 @@ export function ArticleCard({ article, variant = 'default', onNavigate }: Props)
   }
 
   return (
-    <button onClick={() => onNavigate('detail', article.slug)}
-      className="group text-left rounded-xl overflow-hidden border border-slate-200 hover:shadow-lg hover:border-slate-300 transition-all bg-white">
+    <button onClick={go}
+      className="group text-left rounded-xl overflow-hidden border border-slate-200 hover:shadow-lg hover:border-slate-300 transition-all bg-white w-full">
       <div className="h-44 overflow-hidden bg-slate-100">
         {article.thumbnailUrl ? (
           <img src={getImageUrl(article.thumbnailUrl)} alt={article.title}

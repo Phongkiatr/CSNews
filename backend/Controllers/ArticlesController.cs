@@ -20,10 +20,10 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll(
-        [FromQuery] int    page       = 1,
-        [FromQuery] int    pageSize   = 9,
-        [FromQuery] int?   categoryId = null,
-        [FromQuery] string? search    = null)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 9,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] string? search = null)
     {
         var result = await articles.GetPublishedAsync(page, pageSize, categoryId, search);
         return Ok(new ApiResponse<PagedResponse<ArticleListResponse>>(true, result));
@@ -35,9 +35,9 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     [HttpGet("admin")]
     [Authorize(Roles = "Editor,Admin")]
     public async Task<IActionResult> GetAllAdmin(
-        [FromQuery] int    page     = 1,
-        [FromQuery] int    pageSize = 10,
-        [FromQuery] string? status  = null)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? status = null)
     {
         var result = await articles.GetAllAsync(page, pageSize, status);
         return Ok(new ApiResponse<PagedResponse<ArticleListResponse>>(true, result));
@@ -78,7 +78,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     public async Task<IActionResult> Update(int id, [FromBody] UpdateArticleRequest req)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var role   = User.FindFirstValue(ClaimTypes.Role)!;
+        var role = User.FindFirstValue(ClaimTypes.Role)!;
         var result = await articles.UpdateAsync(id, req, userId, role);
         return Ok(new ApiResponse<ArticleDetailResponse>(true, result, "แก้ไขบทความสำเร็จ"));
     }
@@ -90,7 +90,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var role   = User.FindFirstValue(ClaimTypes.Role)!;
+        var role = User.FindFirstValue(ClaimTypes.Role)!;
         await articles.DeleteAsync(id, userId, role);
         return Ok(new ApiResponse<string>(true, "ลบบทความสำเร็จ"));
     }
@@ -103,5 +103,17 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     {
         await articles.PublishAsync(id);
         return Ok(new ApiResponse<string>(true, "เผยแพร่บทความสำเร็จ"));
+    }
+
+    [HttpGet("mine")]
+    [Authorize(Roles = "Editor,Admin")]
+    public async Task<IActionResult> GetMine(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? status = null)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var result = await articles.GetMyArticlesAsync(userId, page, pageSize, status);
+        return Ok(new ApiResponse<PagedResponse<ArticleListResponse>>(true, result));
     }
 }

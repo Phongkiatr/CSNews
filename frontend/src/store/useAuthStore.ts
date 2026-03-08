@@ -28,7 +28,6 @@ export function useAuthStore(): AuthStore {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // ── Listen for auth:expired event (from axios interceptor) ─────────────────
   useEffect(() => {
     const handler = () => logout();
     window.addEventListener('auth:expired', handler);
@@ -38,8 +37,7 @@ export function useAuthStore(): AuthStore {
   const persist = (tok: string, u: User) => {
     localStorage.setItem(TOKEN_KEY, tok);
     localStorage.setItem(USER_KEY, JSON.stringify(u));
-    setToken(tok);
-    setUser(u);
+    setToken(tok); setUser(u);
   };
 
   const login = useCallback(async (email: string, password: string) => {
@@ -47,9 +45,7 @@ export function useAuthStore(): AuthStore {
     try {
       const res = await authApi.login({ email, password });
       persist(res.token, res.user);
-    } finally {
-      setIsLoading(false);
-    }
+    } finally { setIsLoading(false); }
   }, []);
 
   const register = useCallback(async (username: string, email: string, password: string) => {
@@ -57,16 +53,13 @@ export function useAuthStore(): AuthStore {
     try {
       const res = await authApi.register({ username, email, password });
       persist(res.token, res.user);
-    } finally {
-      setIsLoading(false);
-    }
+    } finally { setIsLoading(false); }
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    setToken(null);
-    setUser(null);
+    setToken(null); setUser(null);
   }, []);
 
   const hasRole = useCallback((minRole: UserRole) => {
@@ -77,8 +70,7 @@ export function useAuthStore(): AuthStore {
   return {
     user, token,
     isAuthenticated: !!token && !!user,
-    isLoading,
-    login, register, logout, hasRole,
+    isLoading, login, register, logout, hasRole,
     canWrite: !!user && ['Editor', 'Admin'].includes(user.role),
     isAdmin:  user?.role === 'Admin',
   };

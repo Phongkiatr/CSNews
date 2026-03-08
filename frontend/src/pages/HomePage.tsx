@@ -1,32 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ArticleListItem, Category, PageName } from '../types';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import type { ArticleListItem, Category } from '../types';
 import { articleApi, categoryApi } from '../api';
 import { ArticleCard } from '../components/article/ArticleCard';
 
-interface Props {
-  onNavigate: (p: PageName, slug?: string) => void;
-}
+export function HomePage() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-export function HomePage({ onNavigate }: Props) {
   const [articles,    setArticles]    = useState<ArticleListItem[]>([]);
   const [categories,  setCategories]  = useState<Category[]>([]);
-  const [selectedCat, setSelectedCat] = useState<number | undefined>();
-  const [search,      setSearch]      = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [page,        setPage]        = useState(1);
-  const [totalPages,  setTotalPages]  = useState(1);
-  const [totalCount,  setTotalCount]  = useState(0);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState('');
+  const [totalPages,  setTotalPages]  = useState(1);
+  const [totalCount,  setTotalCount]  = useState(0);
+  const [searchInput, setSearchInput] = useState('');
 
-  // Load categories once
-  useEffect(() => {
-    categoryApi.getAll().then(setCategories).catch(console.error);
-  }, []);
+  // ดึง filter จาก URL
+  const page       = Number(searchParams.get('page') ?? 1);
+  const search     = searchParams.get('search') ?? '';
+  const categoryName = searchParams.get('category') ?? '';
+
+  useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
+
+  // หา categoryId จากชื่อ
+  const selectedCat = categories.find(c => c.name === categoryName)?.id;
 
   const fetchArticles = useCallback(async () => {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const res = await articleApi.getAll({
         page, pageSize: 9,
@@ -38,23 +39,39 @@ export function HomePage({ onNavigate }: Props) {
       setTotalCount(res.totalCount);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'โหลดข่าวไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }, [page, selectedCat, search]);
 
   useEffect(() => { fetchArticles(); }, [fetchArticles]);
+  useEffect(() => { setSearchInput(search); }, [search]);
 
-  // Reset page when filter changes
-  const handleCatChange = (id?: number) => { setSelectedCat(id); setPage(1); };
-  const handleSearch = () => { setSearch(searchInput); setPage(1); };
+  const handleCatChange = (name?: string) => {
+    const p: Record<string, string> = {};
+    if (name) p.category = name;
+    if (search) p.search = search;
+    setSearchParams(p);
+  };
 
-  const featured = articles.filter((a) => a.isFeatured);
-  const rest      = articles.filter((a) => !a.isFeatured);
+  const handleSearch = () => {
+    const p: Record<string, string> = { search: searchInput };
+    if (categoryName) p.category = categoryName;
+    setSearchParams(p);
+  };
+
+  const setPage = (p: number) => {
+    const params: Record<string, string> = { page: String(p) };
+    if (search) params.search = search;
+    if (categoryName) params.category = categoryName;
+    setSearchParams(params);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const featured = articles.filter(a => a.isFeatured);
+  const rest      = articles.filter(a => !a.isFeatured);
 
   return (
     <div style={{ fontFamily: "'DM Sans',sans-serif" }}>
-      {/* Hero banner */}
+      {/* Hero */}
       <div className="bg-slate-950 text-white px-6 py-10">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-black mb-2 leading-tight"
@@ -62,12 +79,10 @@ export function HomePage({ onNavigate }: Props) {
             ข่าวสารทันโลก<br />
             <span className="text-amber-400">อัปเดตทุกวัน</span>
           </h1>
-          <p className="text-slate-400 text-sm mb-6">
-            รวมข่าวที่คุณต้องรู้ ครอบคลุมทุกมิติ — powered by CSNews API
-          </p>
+          <p className="text-slate-400 text-sm mb-6">รวมข่าวที่คุณต้องรู้ ครอบคลุมทุกมิติ</p>
           <div className="flex max-w-md">
-            <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="ค้นหาข่าว..."
               className="flex-1 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 px-4 py-2.5 rounded-l-lg text-sm focus:outline-none focus:border-amber-500 transition-colors" />
             <button onClick={handleSearch}
@@ -83,28 +98,25 @@ export function HomePage({ onNavigate }: Props) {
         <div className="flex gap-2 flex-wrap mb-6 border-b border-slate-200 pb-4">
           <button onClick={() => handleCatChange(undefined)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-              !selectedCat ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
+              !categoryName ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
             ทั้งหมด
           </button>
-          {categories.map((c) => (
-            <button key={c.id} onClick={() => handleCatChange(c.id)}
+          {categories.map(c => (
+            <button key={c.id} onClick={() => handleCatChange(c.name)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                selectedCat === c.id ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
+                categoryName === c.name ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
               {c.name}
               <span className="ml-1 text-xs opacity-50">({c.articleCount})</span>
             </button>
           ))}
         </div>
 
-        {/* Status bar */}
         {!loading && (
           <p className="text-xs text-slate-400 mb-4" style={{ fontFamily: "'DM Mono',monospace" }}>
-            พบ {totalCount.toLocaleString()} ข่าว
-            {search && ` · ค้นหา "${search}"`}
+            พบ {totalCount.toLocaleString()} ข่าว{search && ` · ค้นหา "${search}"`}
           </p>
         )}
 
-        {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-6 flex items-center justify-between">
             <span>⚠️ {error}</span>
@@ -112,7 +124,6 @@ export function HomePage({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* Loading skeleton */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -128,28 +139,24 @@ export function HomePage({ onNavigate }: Props) {
           </div>
         )}
 
-        {/* Featured */}
         {!loading && featured.length > 0 && (
           <section className="mb-10">
             <SectionLabel accent>ข่าวแนะนำ</SectionLabel>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {featured.map((a, i) => (
                 <div key={a.id} className={i === 0 ? 'md:col-span-2' : ''}>
-                  <ArticleCard article={a} variant={i === 0 ? 'hero' : 'featured'} onNavigate={onNavigate} />
+                  <ArticleCard article={a} variant={i === 0 ? 'hero' : 'featured'} />
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {/* Rest */}
         {!loading && rest.length > 0 && (
           <section>
             <SectionLabel>ข่าวล่าสุด</SectionLabel>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {rest.map((a) => (
-                <ArticleCard key={a.id} article={a} onNavigate={onNavigate} />
-              ))}
+              {rest.map(a => <ArticleCard key={a.id} article={a} />)}
             </div>
           </section>
         )}
@@ -158,14 +165,18 @@ export function HomePage({ onNavigate }: Props) {
           <div className="text-center py-20 text-slate-400">
             <p className="text-4xl mb-3">🔍</p>
             <p className="text-lg font-medium">ไม่พบข่าวที่ค้นหา</p>
-            {search && <button onClick={() => { setSearch(''); setSearchInput(''); }} className="mt-2 text-sm text-amber-600 hover:underline">ล้างการค้นหา</button>}
+            {search && (
+              <button onClick={() => { setSearchInput(''); setSearchParams({}); }}
+                className="mt-2 text-sm text-amber-600 hover:underline">
+                ล้างการค้นหา
+              </button>
+            )}
           </div>
         )}
 
-        {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="flex gap-2 justify-center mt-10">
-            <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}
+            <button disabled={page === 1} onClick={() => setPage(page - 1)}
               className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 transition-colors">
               ← ก่อนหน้า
             </button>
@@ -179,7 +190,7 @@ export function HomePage({ onNavigate }: Props) {
                 </button>
               );
             })}
-            <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}
+            <button disabled={page === totalPages} onClick={() => setPage(page + 1)}
               className="px-4 py-2 border border-slate-200 rounded-lg text-sm disabled:opacity-40 hover:bg-slate-50 transition-colors">
               ถัดไป →
             </button>

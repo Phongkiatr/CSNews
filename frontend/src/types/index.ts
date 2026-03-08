@@ -51,6 +51,7 @@ export interface CreateArticlePayload {
 
 export interface UpdateArticlePayload extends CreateArticlePayload {
   status: 'Draft' | 'Published' | 'Archived';
+  thumbnailUrl?: string; // ← แก้ตรงนี้
 }
 
 export interface Category {
@@ -90,7 +91,3 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
 }
-
-export type PageName =
-  | 'home' | 'detail' | 'login' | 'register'
-  | 'create' | 'edit' | 'admin' | 'unauthorized';

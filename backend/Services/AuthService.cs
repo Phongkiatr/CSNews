@@ -30,7 +30,9 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 {
     public async Task<AuthResponse> RegisterAsync(RegisterRequest req)
     {
-        if (await db.Users.AnyAsync(u => u.Email == req.Email))
+        var email = req.Email.ToLower().Trim();
+
+        if (await db.Users.AnyAsync(u => u.Email == email))
             throw new InvalidOperationException("อีเมลนี้ถูกใช้งานแล้ว");
 
         if (await db.Users.AnyAsync(u => u.Username == req.Username))
@@ -38,10 +40,10 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 
         var user = new User
         {
-            Username     = req.Username,
-            Email        = req.Email,
+            Username     = req.Username.Trim(),
+            Email        = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-            Role = "Editor" // Default role สำหรับผู้สมัครใหม่
+            Role         = "Editor"
         };
 
         db.Users.Add(user);
@@ -51,7 +53,8 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 
     public async Task<AuthResponse> LoginAsync(LoginRequest req)
     {
-        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == req.Email)
+        var email = req.Email.ToLower().Trim();
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email)
             ?? throw new KeyNotFoundException("ไม่พบบัญชีผู้ใช้นี้");
 
         if (!user.IsActive)

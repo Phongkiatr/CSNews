@@ -1,18 +1,25 @@
-import type { User, PageName } from '../../types';
+import { Link, useNavigate } from 'react-router-dom';
+import type { User } from '../../types';
 
 interface NavbarProps {
   user: User | null;
-  onNavigate: (p: PageName) => void;
   onLogout: () => void;
 }
 
 const ROLE_BADGE: Record<string, string> = {
-  Admin:  'bg-amber-500/20 text-amber-400',
+  Admin: 'bg-amber-500/20 text-amber-400',
   Editor: 'bg-sky-500/20 text-sky-400',
   Reader: 'bg-slate-700 text-slate-400',
 };
 
-export function Navbar({ user, onNavigate, onLogout }: NavbarProps) {
+export function Navbar({ user, onLogout }: NavbarProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
+  };
+
   return (
     <header className="bg-slate-950 text-white sticky top-0 z-50 border-b border-slate-800">
       <div className="border-b border-slate-800 px-6 py-1.5 flex justify-between items-center"
@@ -23,19 +30,26 @@ export function Navbar({ user, onNavigate, onLogout }: NavbarProps) {
       </div>
 
       <div className="px-6 h-14 flex items-center justify-between gap-4">
-        <button onClick={() => onNavigate('home')}
+        <Link to="/"
           className="text-2xl font-black tracking-tight text-white hover:text-amber-400 transition-colors"
           style={{ fontFamily: "'Playfair Display',serif" }}>
           CSNews
-        </button>
+        </Link>
 
         <nav className="hidden md:flex gap-1 flex-1 justify-center" style={{ fontFamily: "'DM Sans',sans-serif" }}>
-          {['ข่าวล่าสุด', 'เทคโนโลยี', 'การเมือง', 'เศรษฐกิจ', 'กีฬา'].map((c) => (
-            <button key={c}
+          <Link to="/" className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-all">
+            ทั้งหมด
+          </Link>
+          {['เทคโนโลยี', 'การเมือง', 'เศรษฐกิจ', 'กีฬา', 'บันเทิง'].map((c) => (
+            <Link key={c} to={`/?category=${c}`}
               className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-all">
               {c}
-            </button>
+            </Link>
           ))}
+          <Link to="/my-articles"
+            className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
+            📝 โพสต์ของฉัน
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3" style={{ fontFamily: "'DM Sans',sans-serif" }}>
@@ -48,30 +62,30 @@ export function Navbar({ user, onNavigate, onLogout }: NavbarProps) {
                 </span>
               </div>
               {['Editor', 'Admin'].includes(user.role) && (
-                <button onClick={() => onNavigate('create')}
+                <Link to="/create"
                   className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
                   + เขียนข่าว
-                </button>
+                </Link>
               )}
               {user.role === 'Admin' && (
-                <button onClick={() => onNavigate('admin')}
+                <Link to="/admin"
                   className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
                   Admin
-                </button>
+                </Link>
               )}
-              <button onClick={onLogout} className="text-xs text-slate-400 hover:text-red-400 transition-colors">
+              <button onClick={handleLogout} className="text-xs text-slate-400 hover:text-red-400 transition-colors">
                 ออก
               </button>
             </>
           ) : (
             <>
-              <button onClick={() => onNavigate('login')} className="text-sm text-slate-300 hover:text-white transition-colors">
+              <Link to="/login" className="text-sm text-slate-300 hover:text-white transition-colors">
                 เข้าสู่ระบบ
-              </button>
-              <button onClick={() => onNavigate('register')}
+              </Link>
+              <Link to="/register"
                 className="text-sm bg-amber-500 text-slate-950 font-bold px-4 py-1.5 rounded hover:bg-amber-400 transition-colors">
                 สมัครสมาชิก
-              </button>
+              </Link>
             </>
           )}
         </div>

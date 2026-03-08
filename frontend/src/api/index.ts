@@ -49,7 +49,11 @@ export const articleApi = {
 
   publish: (id: number) =>
     axiosClient.patch(`/articles/${id}/publish`),
+
+  getMine: (params?: { page?: number; pageSize?: number; status?: string }) =>
+  unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/mine', { params })),
 };
+
 
 // ── Categories ────────────────────────────────────────────────────────────────
 export const categoryApi = {

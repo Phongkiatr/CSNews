@@ -121,8 +121,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// 3. Static Files — serve ไฟล์จาก wwwroot/ (รูปภาพ, uploads)
-app.UseStaticFiles();
+// 3. Static Files — serve ไฟล์จาก wwwroot/ สร้างโฟลเดอร์อัตโนมัติถ้าไม่มี
+var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+Directory.CreateDirectory(Path.Combine(wwwrootPath, "uploads", "images"));
+Directory.CreateDirectory(Path.Combine(wwwrootPath, "uploads", "articles"));
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(wwwrootPath),
+    RequestPath  = ""
+});
 
 // 4. CORS — ต้องก่อน Authentication
 app.UseCors("FrontendPolicy");
