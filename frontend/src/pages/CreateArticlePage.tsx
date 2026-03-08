@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import type { Category } from '../types';
 import { articleApi, categoryApi, uploadApi } from '../api';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 interface FormState {
   title: string; summary: string; content: string;
@@ -22,16 +24,16 @@ export function CreateArticlePage() {
   const editSlug = searchParams.get('edit'); // ?edit=slug = โหมดแก้ไข
   const { user } = useAuthStore();
 
-  const [form,         setForm]         = useState<FormState>(EMPTY);
-  const [editId,       setEditId]       = useState<number | null>(null);
-  const [categories,   setCategories]   = useState<Category[]>([]);
-  const [thumbFile,    setThumbFile]    = useState<File | null>(null);
+  const [form, setForm] = useState<FormState>(EMPTY);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [thumbFile, setThumbFile] = useState<File | null>(null);
   const [thumbPreview, setThumbPreview] = useState('');
-  const [attachments,  setAttachments]  = useState<File[]>([]);
-  const [saving,       setSaving]       = useState(false);
-  const [loading,      setLoading]      = useState(false);
-  const [error,        setError]        = useState('');
-  const [savedSlug,    setSavedSlug]    = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [savedSlug, setSavedSlug] = useState('');
 
   // โหลด categories
   useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
@@ -44,13 +46,13 @@ export function CreateArticlePage() {
       .then(article => {
         setEditId(article.id);
         setForm({
-          title:        article.title,
-          summary:      article.summary,
-          content:      article.content,
-          categoryId:   article.categoryId,
-          tags:         article.tags.join(', '),
-          isFeatured:   article.isFeatured,
-          status:       article.status as FormState['status'],
+          title: article.title,
+          summary: article.summary,
+          content: article.content,
+          categoryId: article.categoryId,
+          tags: article.tags.join(', '),
+          isFeatured: article.isFeatured,
+          status: article.status as FormState['status'],
           thumbnailUrl: article.thumbnailUrl ?? '',
         });
         // แสดง thumbnail เดิม
@@ -99,22 +101,22 @@ export function CreateArticlePage() {
       if (editId) {
         // โหมดแก้ไข — update บทความเดิม
         const updated = await articleApi.update(editId, {
-          title:        form.title,
-          summary:      form.summary,
-          content:      form.content,
-          categoryId:   Number(form.categoryId),
+          title: form.title,
+          summary: form.summary,
+          content: form.content,
+          categoryId: Number(form.categoryId),
           tags,
-          isFeatured:   form.isFeatured,
-          status:       publish ? 'Published' : form.status,
+          isFeatured: form.isFeatured,
+          status: publish ? 'Published' : form.status,
           thumbnailUrl,
         });
         slug = updated.slug;
       } else {
         // โหมดสร้างใหม่
         const article = await articleApi.create({
-          title:      form.title,
-          summary:    form.summary,
-          content:    form.content,
+          title: form.title,
+          summary: form.summary,
+          content: form.content,
           categoryId: Number(form.categoryId),
           tags,
           isFeatured: form.isFeatured,
@@ -123,13 +125,13 @@ export function CreateArticlePage() {
         // update thumbnailUrl ถ้ามีรูป
         if (thumbnailUrl) {
           await articleApi.update(article.id, {
-            title:      form.title,
-            summary:    form.summary,
-            content:    form.content,
+            title: form.title,
+            summary: form.summary,
+            content: form.content,
             categoryId: Number(form.categoryId),
             tags,
             isFeatured: form.isFeatured,
-            status:     'Draft',
+            status: 'Draft',
             thumbnailUrl,
           });
         }
@@ -226,11 +228,29 @@ export function CreateArticlePage() {
           </Field>
         </div>
 
-        <Field label="เนื้อหา *">
-          <textarea name="content" value={form.content} onChange={handleChange} required rows={12}
-            placeholder="เนื้อหาข่าว (รองรับ HTML)"
-            className={inputCls + ' resize-none font-mono'} />
-        </Field>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">เนื้อหา *</label>
+          <div className="border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-amber-400">
+            <CKEditor
+              editor={ClassicEditor as any}
+              data={form.content}
+              onChange={(_, editor) => {
+                setForm(p => ({ ...p, content: editor.getData() }));
+              }}
+              config={{
+                placeholder: 'เนื้อหาข่าว...',
+                toolbar: [
+                  'heading', '|',
+                  'bold', 'italic', 'underline', '|',
+                  'link', 'blockQuote', '|',
+                  'bulletedList', 'numberedList', '|',
+                  'insertTable', '|',
+                  'undo', 'redo'
+                ],
+              }}
+            />
+          </div>
+        </div>
 
         {/* Thumbnail */}
         <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-6">

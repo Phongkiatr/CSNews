@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: UserRole;
   profileImage?: string;
+  isActive?: boolean;
 }
 
 export interface AuthResponse {

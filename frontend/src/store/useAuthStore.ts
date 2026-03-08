@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import type { User, UserRole } from '../types';
 import { authApi } from '../api';
 
@@ -20,7 +20,15 @@ export interface AuthStore {
 
 const ROLE_LEVEL: Record<UserRole, number> = { Reader: 0, Editor: 1, Admin: 2 };
 
+export const AuthContext = createContext<AuthStore | null>(null);
+
 export function useAuthStore(): AuthStore {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuthStore must be used inside AuthProvider');
+  return ctx;
+}
+
+export function useAuthState(): AuthStore {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
   const [user,  setUser]  = useState<User | null>(() => {
     try { return JSON.parse(localStorage.getItem(USER_KEY) ?? 'null'); }
@@ -37,7 +45,8 @@ export function useAuthStore(): AuthStore {
   const persist = (tok: string, u: User) => {
     localStorage.setItem(TOKEN_KEY, tok);
     localStorage.setItem(USER_KEY, JSON.stringify(u));
-    setToken(tok); setUser(u);
+    setToken(tok);
+    setUser(u);
   };
 
   const login = useCallback(async (email: string, password: string) => {
@@ -59,7 +68,8 @@ export function useAuthStore(): AuthStore {
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    setToken(null); setUser(null);
+    setToken(null);
+    setUser(null);
   }, []);
 
   const hasRole = useCallback((minRole: UserRole) => {

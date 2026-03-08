@@ -7,7 +7,7 @@ interface NavbarProps {
 }
 
 const ROLE_BADGE: Record<string, string> = {
-  Admin: 'bg-amber-500/20 text-amber-400',
+  Admin:  'bg-amber-500/20 text-amber-400',
   Editor: 'bg-sky-500/20 text-sky-400',
   Reader: 'bg-slate-700 text-slate-400',
 };
@@ -46,10 +46,6 @@ export function Navbar({ user, onLogout }: NavbarProps) {
               {c}
             </Link>
           ))}
-          <Link to="/my-articles"
-            className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
-            📝 โพสต์ของฉัน
-          </Link>
         </nav>
 
         <div className="flex items-center gap-3" style={{ fontFamily: "'DM Sans',sans-serif" }}>
@@ -62,10 +58,16 @@ export function Navbar({ user, onLogout }: NavbarProps) {
                 </span>
               </div>
               {['Editor', 'Admin'].includes(user.role) && (
-                <Link to="/create"
-                  className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
-                  + เขียนข่าว
-                </Link>
+                <>
+                  <Link to="/create"
+                    className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
+                    + เขียนข่าว
+                  </Link>
+                  <Link to="/my-articles"
+                    className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
+                    📝 โพสต์ของฉัน
+                  </Link>
+                </>
               )}
               {user.role === 'Admin' && (
                 <Link to="/admin"

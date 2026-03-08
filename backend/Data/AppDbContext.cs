@@ -16,12 +16,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     // ── DbSet = ตารางในฐานข้อมูล ─────────────────────────────
     // db.Users.Where(...), db.Articles.Include(...) ฯลฯ
-    public DbSet<User>        Users        => Set<User>();
-    public DbSet<Article>     Articles     => Set<Article>();
-    public DbSet<Category>    Categories   => Set<Category>();
-    public DbSet<Tag>         Tags         => Set<Tag>();
-    public DbSet<ArticleTag>  ArticleTags  => Set<ArticleTag>();
-    public DbSet<Comment>     Comments     => Set<Comment>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ArticleTag> ArticleTags => Set<ArticleTag>();
+    public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<ArticleFile> ArticleFiles => Set<ArticleFile>();
 
     protected override void OnModelCreating(ModelBuilder mb)
@@ -53,12 +53,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         // Seed หมวดหมู่เริ่มต้น (ใส่ตอน migration ครั้งแรก)
         var t = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         mb.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "ข่าวทั่วไป", Slug = "general",       IsActive = true, CreatedAt = t },
-            new Category { Id = 2, Name = "เทคโนโลยี",  Slug = "technology",    IsActive = true, CreatedAt = t },
-            new Category { Id = 3, Name = "กีฬา",       Slug = "sports",        IsActive = true, CreatedAt = t },
-            new Category { Id = 4, Name = "บันเทิง",    Slug = "entertainment", IsActive = true, CreatedAt = t },
-            new Category { Id = 5, Name = "การเมือง",   Slug = "politics",      IsActive = true, CreatedAt = t },
-            new Category { Id = 6, Name = "เศรษฐกิจ",  Slug = "economy",       IsActive = true, CreatedAt = t }
+            new Category { Id = 1, Name = "ข่าวทั่วไป", Slug = "general", IsActive = true, CreatedAt = t },
+            new Category { Id = 2, Name = "เทคโนโลยี", Slug = "technology", IsActive = true, CreatedAt = t },
+            new Category { Id = 3, Name = "กีฬา", Slug = "sports", IsActive = true, CreatedAt = t },
+            new Category { Id = 4, Name = "บันเทิง", Slug = "entertainment", IsActive = true, CreatedAt = t },
+            new Category { Id = 5, Name = "การเมือง", Slug = "politics", IsActive = true, CreatedAt = t },
+            new Category { Id = 6, Name = "เศรษฐกิจ", Slug = "economy", IsActive = true, CreatedAt = t }
         );
     }
 }

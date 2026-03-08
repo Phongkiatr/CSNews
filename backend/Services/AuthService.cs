@@ -24,6 +24,7 @@ public interface IAuthService
 {
     Task<AuthResponse> RegisterAsync(RegisterRequest req);
     Task<AuthResponse> LoginAsync(LoginRequest req);
+    Task<AuthResponse> ImpersonateAsync(int targetUserId); // Admin เข้าสู่ระบบเป็นผู้ใช้อื่น
 }
 
 public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
@@ -62,6 +63,18 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 
         if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
             throw new UnauthorizedAccessException("รหัสผ่านไม่ถูกต้อง");
+
+        return Build(user);
+    }
+
+    // ── Impersonate ──────────────────────────────────────────
+    public async Task<AuthResponse> ImpersonateAsync(int targetUserId)
+    {
+        var user = await db.Users.FindAsync(targetUserId)
+            ?? throw new KeyNotFoundException("ไม่พบผู้ใช้");
+
+        if (!user.IsActive)
+            throw new InvalidOperationException("บัญชีนี้ถูกระงับ");
 
         return Build(user);
     }

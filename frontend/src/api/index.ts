@@ -47,13 +47,31 @@ export const articleApi = {
   delete: (id: number) =>
     axiosClient.delete(`/articles/${id}`),
 
+  /** ดูบทความของตัวเอง */
+  getMine: (params?: { page?: number; pageSize?: number; status?: string }) =>
+    unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/mine', { params })),
+
   publish: (id: number) =>
     axiosClient.patch(`/articles/${id}/publish`),
-
-  getMine: (params?: { page?: number; pageSize?: number; status?: string }) =>
-  unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/mine', { params })),
 };
 
+// ── Users (Admin) ────────────────────────────────────────────────────────────
+export const usersApi = {
+  getAll: (params?: { page?: number; pageSize?: number }) =>
+    unwrap<PagedResult<import('../types').User>>(axiosClient.get('/users', { params })),
+
+  changeRole: (id: number, role: string) =>
+    unwrap(axiosClient.patch(`/users/${id}/role`, { role })),
+
+  toggleSuspend: (id: number) =>
+    unwrap(axiosClient.patch(`/users/${id}/suspend`)),
+
+  impersonate: (id: number) =>
+    unwrap<AuthResponse>(axiosClient.post(`/users/${id}/impersonate`)),
+
+  delete: (id: number) =>
+    axiosClient.delete(`/users/${id}`),
+};
 
 // ── Categories ────────────────────────────────────────────────────────────────
 export const categoryApi = {

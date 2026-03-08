@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/useAuthStore';
 import { Navbar } from './components/common/Navbar';
 import { HomePage } from './pages/HomePage';
@@ -8,7 +8,6 @@ import { CreateArticlePage } from './pages/CreateArticlePage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UnauthorizedPage, NotFoundPage } from './pages/ErrorPages';
 import { MyArticlesPage } from './pages/MyArticlesPage';
-
 
 // Inject Google Fonts
 (function injectFonts() {
@@ -34,8 +33,9 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout({ children, fullscreen = false }: { children: React.ReactNode; fullscreen?: boolean }) {
   const { user, logout } = useAuthStore();
+  if (fullscreen) return <>{children}</>;
   return (
     <div className="min-h-screen bg-white">
       <Navbar user={user} onLogout={logout} />
@@ -56,21 +56,27 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function AppRoutes() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
   return (
-    <BrowserRouter>
-      <Layout>
-        <Routes>
+    <Layout fullscreen={isAdmin}>
+      <Routes>
           {/* Public */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/articles/:slug" element={<ArticleDetailPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/"                  element={<HomePage />} />
+          <Route path="/articles/:slug"    element={<ArticleDetailPage />} />
+          <Route path="/login"             element={<LoginPage />} />
+          <Route path="/register"          element={<RegisterPage />} />
+          <Route path="/unauthorized"      element={<UnauthorizedPage />} />
 
           {/* Protected: ต้อง Login */}
           <Route path="/create" element={
             <RequireAuth><CreateArticlePage /></RequireAuth>
+          } />
+
+          {/* Protected: Editor + Admin */}
+          <Route path="/my-articles" element={
+            <RequireAuth><MyArticlesPage /></RequireAuth>
           } />
 
           {/* Protected: Admin only */}
@@ -78,15 +84,17 @@ export default function App() {
             <RequireAdmin><AdminDashboard /></RequireAdmin>
           } />
 
-          {/* Protected: ต้อง Login */}
-          <Route path="/my-articles" element={
-            <RequireAuth><MyArticlesPage /></RequireAuth>
-          } />
-
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
-      </Layout>
+    </Layout>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

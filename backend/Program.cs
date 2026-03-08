@@ -152,6 +152,22 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    // Seed Admin
+    if (!db.Users.Any(u => u.Email == "admin@csnews.com"))
+    {
+        db.Users.Add(new CSNews.Models.Entities.User
+        {
+            Username     = "admin",
+            Email        = "admin@csnews.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
+            Role         = "Admin",
+            IsActive     = true,
+            CreatedAt    = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+    }
 }
+
 
 app.Run();
