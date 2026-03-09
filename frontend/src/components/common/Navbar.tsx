@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { User } from '../../types';
 
@@ -14,8 +15,21 @@ const ROLE_BADGE: Record<string, string> = {
 
 export function Navbar({ user, onLogout }: NavbarProps) {
   const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // ปิด dropdown เมื่อคลิกข้างนอก
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const handleLogout = () => {
+    setOpen(false);
     onLogout();
     navigate('/');
   };
@@ -40,7 +54,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
           <Link to="/" className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-all">
             ทั้งหมด
           </Link>
-          {['เทคโนโลยี', 'การเมือง', 'เศรษฐกิจ', 'กีฬา', 'บันเทิง'].map((c) => (
+          {['เทคโนโลยี', 'การเมือง', 'เศรษฐกิจ', 'กีฬา', 'บันเทิง'].map(c => (
             <Link key={c} to={`/?category=${c}`}
               className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-all">
               {c}
@@ -51,33 +65,56 @@ export function Navbar({ user, onLogout }: NavbarProps) {
         <div className="flex items-center gap-3" style={{ fontFamily: "'DM Sans',sans-serif" }}>
           {user ? (
             <>
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="text-sm text-slate-300">{user.username}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[user.role] ?? ''}`}>
-                  {user.role}
-                </span>
-              </div>
+              {/* + เขียนข่าว */}
               {['Editor', 'Admin'].includes(user.role) && (
-                <>
-                  <Link to="/create"
-                    className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
-                    + เขียนข่าว
-                  </Link>
-                  <Link to="/my-articles"
-                    className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
-                    📝 โพสต์ของฉัน
-                  </Link>
-                </>
-              )}
-              {user.role === 'Admin' && (
-                <Link to="/admin"
-                  className="hidden sm:block text-xs border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:border-slate-400 transition-colors">
-                  Admin
+                <Link to="/create"
+                  className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
+                  + เขียนข่าว
                 </Link>
               )}
-              <button onClick={handleLogout} className="text-xs text-slate-400 hover:text-red-400 transition-colors">
-                ออก
-              </button>
+
+              {/* User dropdown */}
+              <div className="relative" ref={ref}>
+                <button onClick={() => setOpen(p => !p)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+                  {/* ชื่อ + Role */}
+                  <div className="hidden sm:flex items-center gap-2">
+                    <span className="text-sm text-slate-300">{user.username}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[user.role] ?? ''}`}>
+                      {user.role}
+                    </span>
+                  </div>
+                  {/* Arrow */}
+                  <span className={`text-slate-400 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+                    ▾
+                  </span>
+                </button>
+
+                {/* Dropdown menu */}
+                {open && (
+                  <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+                    {['Editor', 'Admin'].includes(user.role) && (
+                      <Link to="/my-articles"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                        <span>📝</span> โพสต์ของฉัน
+                      </Link>
+                    )}
+                    {user.role === 'Admin' && (
+                      <Link to="/admin"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                        <span>⚙️</span> Dashboard
+                      </Link>
+                    )}
+                    <div className="border-t border-slate-700" />
+                    <button onClick={handleLogout}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-slate-800 transition-colors">
+                      <span>→</span> ออกจากระบบ
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>
