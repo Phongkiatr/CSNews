@@ -7,38 +7,38 @@ import { formatDate } from '../../utils/format';
 
 // ── Sidebar nav items ─────────────────────────────────────────
 const NAV = [
-  { icon: '▣', label: 'Dashboard',    tab: 'overview' },
-  { icon: '📰', label: 'บทความ',       tab: 'articles' },
-  { icon: '👥', label: 'ผู้ใช้งาน',   tab: 'users'    },
+  { icon: '▣', label: 'Dashboard', tab: 'overview' },
+  { icon: '📰', label: 'บทความ', tab: 'articles' },
+  { icon: '👥', label: 'ผู้ใช้งาน', tab: 'users' },
 ];
 
 const ROLE_COLOR: Record<string, string> = {
-  Admin:  'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+  Admin: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
   Editor: 'bg-sky-500/15 text-sky-400 border border-sky-500/30',
   Reader: 'bg-slate-700/60 text-slate-400 border border-slate-600',
 };
 
 const STATUS_COLOR: Record<string, string> = {
   Published: 'bg-emerald-500/15 text-emerald-400',
-  Draft:     'bg-amber-500/15 text-amber-400',
-  Archived:  'bg-slate-700 text-slate-400',
+  Draft: 'bg-amber-500/15 text-amber-400',
+  Archived: 'bg-slate-700 text-slate-400',
 };
 
 export function AdminDashboard() {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { user, login } = useAuthStore();
-  const [tab,         setTab]         = useState('overview');
-  const [articles,    setArticles]    = useState<ArticleListItem[]>([]);
-  const [users,       setUsers]       = useState<User[]>([]);
-  const [stats,       setStats]       = useState({ total: 0, published: 0, draft: 0, totalUsers: 0 });
-  const [artFilter,   setArtFilter]   = useState('');
-  const [artPage,     setArtPage]     = useState(1);
-  const [artTotal,    setArtTotal]    = useState(1);
-  const [userPage,    setUserPage]    = useState(1);
-  const [userTotal,   setUserTotal]   = useState(1);
-  const [loading,     setLoading]     = useState(true);
-  const [toast,       setToast]       = useState<{ msg: string; ok: boolean } | null>(null);
-  const [roleModal,   setRoleModal]   = useState<User | null>(null);
+  const [tab, setTab] = useState('overview');
+  const [articles, setArticles] = useState<ArticleListItem[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, totalUsers: 0 });
+  const [artFilter, setArtFilter] = useState('');
+  const [artPage, setArtPage] = useState(1);
+  const [artTotal, setArtTotal] = useState(1);
+  const [userPage, setUserPage] = useState(1);
+  const [userTotal, setUserTotal] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [roleModal, setRoleModal] = useState<User | null>(null);
 
   const notify = (msg: string, ok = true) => {
     setToast({ msg, ok });
@@ -78,7 +78,7 @@ export function AdminDashboard() {
   }, [userPage]);
 
   useEffect(() => { loadArticles(); }, [loadArticles]);
-  useEffect(() => { loadUsers();    }, [loadUsers]);
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   // ── Actions ──────────────────────────────────────────────────
   const handlePublish = async (id: number) => {
@@ -149,11 +149,10 @@ export function AdminDashboard() {
           <p className="text-xs font-bold tracking-widest text-slate-600 px-3 pt-2 pb-1 uppercase">เมนู</p>
           {NAV.map(n => (
             <button key={n.tab} onClick={() => setTab(n.tab)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                tab === n.tab
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${tab === n.tab
                   ? 'bg-amber-500/10 text-amber-400 font-semibold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}>
+                }`}>
               <span className="text-base">{n.icon}</span>
               <span>{n.label}</span>
               {tab === n.tab && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-500" />}
@@ -194,7 +193,7 @@ export function AdminDashboard() {
             <h1 className="text-white font-bold text-base">
               {tab === 'overview' && 'Dashboard Overview'}
               {tab === 'articles' && 'จัดการบทความ'}
-              {tab === 'users'    && 'จัดการผู้ใช้งาน'}
+              {tab === 'users' && 'จัดการผู้ใช้งาน'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -210,11 +209,10 @@ export function AdminDashboard() {
 
           {/* ── Toast ─────────────────────────────────────── */}
           {toast && (
-            <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-xl border transition-all ${
-              toast.ok
+            <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-xl border transition-all ${toast.ok
                 ? 'bg-slate-900 border-emerald-500/40 text-emerald-400'
                 : 'bg-slate-900 border-red-500/40 text-red-400'
-            }`}>
+              }`}>
               {toast.msg}
             </div>
           )}
@@ -225,10 +223,10 @@ export function AdminDashboard() {
               {/* Stats cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'บทความทั้งหมด', value: stats.total,     icon: '📰', delta: 'บทความ', color: 'from-sky-500/20 to-sky-600/5',     border: 'border-sky-500/20',   text: 'text-sky-400'     },
-                  { label: 'เผยแพร่แล้ว',  value: stats.published, icon: '✅', delta: 'Published', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400' },
-                  { label: 'ฉบับร่าง',     value: stats.draft,     icon: '📝', delta: 'Draft',   color: 'from-amber-500/20 to-amber-600/5',   border: 'border-amber-500/20',  text: 'text-amber-400'   },
-                  { label: 'ผู้ใช้งาน',   value: stats.totalUsers, icon: '👥', delta: 'Users',  color: 'from-violet-500/20 to-violet-600/5', border: 'border-violet-500/20', text: 'text-violet-400'  },
+                  { label: 'บทความทั้งหมด', value: stats.total, icon: '📰', delta: 'บทความ', color: 'from-sky-500/20 to-sky-600/5', border: 'border-sky-500/20', text: 'text-sky-400' },
+                  { label: 'เผยแพร่แล้ว', value: stats.published, icon: '✅', delta: 'Published', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400' },
+                  { label: 'ฉบับร่าง', value: stats.draft, icon: '📝', delta: 'Draft', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400' },
+                  { label: 'ผู้ใช้งาน', value: stats.totalUsers, icon: '👥', delta: 'Users', color: 'from-violet-500/20 to-violet-600/5', border: 'border-violet-500/20', text: 'text-violet-400' },
                 ].map(s => (
                   <div key={s.label}
                     className={`bg-gradient-to-br ${s.color} border ${s.border} rounded-2xl p-5`}>
@@ -308,9 +306,9 @@ export function AdminDashboard() {
               {/* Mini stats */}
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: 'ทั้งหมด',      value: stats.total,     color: 'text-white' },
+                  { label: 'ทั้งหมด', value: stats.total, color: 'text-white' },
                   { label: 'เผยแพร่แล้ว', value: stats.published, color: 'text-emerald-400' },
-                  { label: 'ฉบับร่าง',    value: stats.draft,     color: 'text-amber-400' },
+                  { label: 'ฉบับร่าง', value: stats.draft, color: 'text-amber-400' },
                 ].map(s => (
                   <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
                     <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
@@ -325,11 +323,10 @@ export function AdminDashboard() {
                   <div className="flex gap-2">
                     {['', 'Published', 'Draft', 'Archived'].map(s => (
                       <button key={s} onClick={() => { setArtFilter(s); setArtPage(1); }}
-                        className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                          artFilter === s
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${artFilter === s
                             ? 'bg-amber-500 text-slate-950'
                             : 'bg-slate-800 text-slate-400 hover:text-white'
-                        }`}>
+                          }`}>
                         {s || 'ทั้งหมด'}
                       </button>
                     ))}
@@ -425,9 +422,9 @@ export function AdminDashboard() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: 'ผู้ใช้ทั้งหมด', value: stats.totalUsers,                                         color: 'text-white'        },
-                  { label: 'Admin',          value: users.filter(u => u.role === 'Admin').length,             color: 'text-amber-400'    },
-                  { label: 'Editor',         value: users.filter(u => u.role === 'Editor').length,            color: 'text-sky-400'      },
+                  { label: 'ผู้ใช้ทั้งหมด', value: stats.totalUsers, color: 'text-white' },
+                  { label: 'Admin', value: users.filter(u => u.role === 'Admin').length, color: 'text-amber-400' },
+                  { label: 'Editor', value: users.filter(u => u.role === 'Editor').length, color: 'text-sky-400' },
                 ].map(s => (
                   <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
                     <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
@@ -483,11 +480,10 @@ export function AdminDashboard() {
 
                             {/* Active status */}
                             <td className="px-5 py-3.5">
-                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                                u.isActive !== false
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${u.isActive !== false
                                   ? 'bg-emerald-500/15 text-emerald-400'
                                   : 'bg-red-500/15 text-red-400'
-                              }`}>
+                                }`}>
                                 {u.isActive !== false ? '● Active' : '● Suspended'}
                               </span>
                             </td>
@@ -506,11 +502,10 @@ export function AdminDashboard() {
                                 {/* Suspend toggle */}
                                 {u.id !== user?.id && (
                                   <button onClick={() => handleSuspend(u)}
-                                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${
-                                      u.isActive !== false
+                                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${u.isActive !== false
                                         ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
                                         : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
-                                    }`}>
+                                      }`}>
                                     {u.isActive !== false ? 'ระงับ' : 'คืนสิทธิ์'}
                                   </button>
                                 )}
@@ -564,11 +559,10 @@ export function AdminDashboard() {
             <div className="space-y-2">
               {['Reader', 'Editor', 'Admin'].map(role => (
                 <button key={role} onClick={() => handleChangeRole(roleModal.id, role)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
-                    roleModal.role === role
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium border transition-all ${roleModal.role === role
                       ? `${ROLE_COLOR[role]} opacity-100`
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'
-                  }`}>
+                    }`}>
                   <span>{role}</span>
                   {roleModal.role === role && <span className="text-xs opacity-60">ปัจจุบัน</span>}
                 </button>

@@ -8,17 +8,17 @@ export function HomePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [articles,    setArticles]    = useState<ArticleListItem[]>([]);
-  const [categories,  setCategories]  = useState<Category[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState('');
-  const [totalPages,  setTotalPages]  = useState(1);
-  const [totalCount,  setTotalCount]  = useState(0);
+  const [articles, setArticles] = useState<ArticleListItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState('');
 
   // ดึง filter จาก URL
-  const page       = Number(searchParams.get('page') ?? 1);
-  const search     = searchParams.get('search') ?? '';
+  const page = Number(searchParams.get('page') ?? 1);
+  const search = searchParams.get('search') ?? '';
   const categoryName = searchParams.get('category') ?? '';
 
   useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
@@ -67,7 +67,7 @@ export function HomePage() {
   };
 
   const featured = articles.filter(a => a.isFeatured);
-  const rest      = articles.filter(a => !a.isFeatured);
+  const rest = articles.filter(a => !a.isFeatured);
 
   return (
     <div style={{ fontFamily: "'DM Sans',sans-serif" }}>
@@ -97,14 +97,12 @@ export function HomePage() {
         {/* Category filter */}
         <div className="flex gap-2 flex-wrap mb-6 border-b border-slate-200 pb-4">
           <button onClick={() => handleCatChange(undefined)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-              !categoryName ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${!categoryName ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
             ทั้งหมด
           </button>
           {categories.map(c => (
             <button key={c.id} onClick={() => handleCatChange(c.name)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                categoryName === c.name ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${categoryName === c.name ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
               {c.name}
               <span className="ml-1 text-xs opacity-50">({c.articleCount})</span>
             </button>
@@ -184,8 +182,7 @@ export function HomePage() {
               const p = i + 1;
               return (
                 <button key={p} onClick={() => setPage(p)}
-                  className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
-                    page === p ? 'bg-slate-900 text-white' : 'border border-slate-200 hover:bg-slate-50'}`}>
+                  className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-slate-900 text-white' : 'border border-slate-200 hover:bg-slate-50'}`}>
                   {p}
                 </button>
               );

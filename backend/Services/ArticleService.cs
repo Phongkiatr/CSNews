@@ -21,7 +21,7 @@ public interface IArticleService
 {
     Task<PagedResponse<ArticleListResponse>> GetPublishedAsync(int page, int pageSize, int? categoryId, string? search);
     Task<PagedResponse<ArticleListResponse>> GetAllAsync(int page, int pageSize, string? status);
-    Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated);
+    Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated, int? userId = null);
     Task<ArticleDetailResponse> GetByIdAsync(int id);
     Task<ArticleDetailResponse> CreateAsync(CreateArticleRequest req, int authorId);
     Task<ArticleDetailResponse> UpdateAsync(int id, UpdateArticleRequest req, int userId, string role);
@@ -68,7 +68,7 @@ public class ArticleService(AppDbContext db) : IArticleService
     }
 
     // ── Detail + เพิ่ม ViewCount ─────────────────────────────
-    public async Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated)
+    public async Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated, int? userId = null)
     {
         var q = db.Articles
             .Include(a => a.Author)
@@ -84,8 +84,12 @@ public class ArticleService(AppDbContext db) : IArticleService
         var article = await q.FirstOrDefaultAsync()
             ?? throw new KeyNotFoundException("ไม่พบบทความ");
 
-        article.ViewCount++;
-        await db.SaveChangesAsync();
+        // นับ ViewCount เฉพาะเมื่อไม่ใช่เจ้าของบทความ
+        if (userId == null || userId != article.AuthorId)
+        {
+            article.ViewCount++;
+            await db.SaveChangesAsync();
+        }
 
         return ToDetailDto(article);
     }
@@ -252,7 +256,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         a.Id, a.Title, a.Slug, a.Summary, a.Content, a.ThumbnailUrl,
         a.Status, a.ViewCount, a.IsFeatured,
         a.CategoryId, a.Category.Name,
-        new UserResponse(a.Author.Id, a.Author.Username, a.Author.Email, a.Author.Role, a.Author.ProfileImage),
+        new UserResponse(a.Author.Id, a.Author.Username, a.Author.Email, a.Author.Role, a.Author.ProfileImage, a.Author.IsActive),
         a.ArticleTags.Select(at => at.Tag.Name).ToList(),
         a.Files.Select(f => new ArticleFileResponse(
             f.Id, f.FileName, f.OriginalFileName, f.FilePath, f.FileType, f.FileSize)).ToList(),

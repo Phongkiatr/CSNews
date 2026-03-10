@@ -4,34 +4,24 @@
 // เฉพาะ Admin เท่านั้น
 // ============================================================
 using System.Security.Claims;
-using CSNews.Data;
 using CSNews.Models.DTOs;
 using CSNews.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CSNews.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
-public class UsersController(AppDbContext db, IAuthService auth) : ControllerBase
+public class UsersController(IUserService users, IAuthService auth) : ControllerBase
 {
     // GET /api/users
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var q     = db.Users.OrderByDescending(u => u.CreatedAt);
-        var total = await q.CountAsync();
-        var items = await q
-            .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(u => new UserResponse(u.Id, u.Username, u.Email, u.Role, u.ProfileImage))
-            .ToListAsync();
-
-        return Ok(new ApiResponse<PagedResponse<UserResponse>>(true,
-            new PagedResponse<UserResponse>(items, total, page, pageSize,
-                (int)Math.Ceiling((double)total / pageSize))));
+        var result = await users.GetAllAsync(page, pageSize);
+        return Ok(new ApiResponse<PagedResponse<UserResponse>>(true, result));
     }
 
     // PATCH /api/users/{id}/role
@@ -39,23 +29,8 @@ public class UsersController(AppDbContext db, IAuthService auth) : ControllerBas
     public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleRequest req)
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        if (id == myId)
-            return BadRequest(new ApiResponse<string>(false, "", "ไม่สามารถเปลี่ยน Role ของตัวเองได้"));
-
-        var allowed = new[] { "Reader", "Editor", "Admin" };
-        if (!allowed.Contains(req.Role))
-            return BadRequest(new ApiResponse<string>(false, "", $"Role ต้องเป็น: {string.Join(", ", allowed)}"));
-
-        var user = await db.Users.FindAsync(id);
-        if (user is null)
-            return NotFound(new ApiResponse<string>(false, "", "ไม่พบผู้ใช้"));
-
-        user.Role = req.Role;
-        await db.SaveChangesAsync();
-
-        return Ok(new ApiResponse<UserResponse>(true,
-            new UserResponse(user.Id, user.Username, user.Email, user.Role, user.ProfileImage),
-            $"เปลี่ยน Role เป็น {req.Role} สำเร็จ"));
+        var result = await users.ChangeRoleAsync(id, req.Role, myId);
+        return Ok(new ApiResponse<UserResponse>(true, result, $"เปลี่ยน Role เป็น {req.Role} สำเร็จ"));
     }
 
     // PATCH /api/users/{id}/suspend
@@ -63,19 +38,9 @@ public class UsersController(AppDbContext db, IAuthService auth) : ControllerBas
     public async Task<IActionResult> ToggleSuspend(int id)
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        if (id == myId)
-            return BadRequest(new ApiResponse<string>(false, "", "ไม่สามารถระงับ Account ตัวเองได้"));
-
-        var user = await db.Users.FindAsync(id);
-        if (user is null)
-            return NotFound(new ApiResponse<string>(false, "", "ไม่พบผู้ใช้"));
-
-        user.IsActive = !user.IsActive;
-        await db.SaveChangesAsync();
-
-        var msg = user.IsActive ? "คืนสิทธิ์ Account สำเร็จ" : "ระงับ Account สำเร็จ";
-        return Ok(new ApiResponse<UserResponse>(true,
-            new UserResponse(user.Id, user.Username, user.Email, user.Role, user.ProfileImage), msg));
+        var result = await users.ToggleSuspendAsync(id, myId);
+        var msg = result.Role != null ? "สำเร็จ" : "สำเร็จ"; // simplified
+        return Ok(new ApiResponse<UserResponse>(true, result, "เปลี่ยนสถานะสำเร็จ"));
     }
 
     // POST /api/users/{id}/impersonate
@@ -95,17 +60,7 @@ public class UsersController(AppDbContext db, IAuthService auth) : ControllerBas
     public async Task<IActionResult> Delete(int id)
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        if (id == myId)
-            return BadRequest(new ApiResponse<string>(false, "", "ลบ Account ตัวเองไม่ได้"));
-
-        var user = await db.Users.FindAsync(id);
-        if (user is null)
-            return NotFound(new ApiResponse<string>(false, "", "ไม่พบผู้ใช้"));
-
-        db.Users.Remove(user);
-        await db.SaveChangesAsync();
+        await users.DeleteAsync(id, myId);
         return Ok(new ApiResponse<string>(true, "ลบผู้ใช้สำเร็จ"));
     }
 }
-
-public record ChangeRoleRequest(string Role);

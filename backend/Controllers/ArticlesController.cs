@@ -65,7 +65,10 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     public async Task<IActionResult> GetBySlug(string slug)
     {
         var isAuth = User.Identity?.IsAuthenticated ?? false;
-        var result = await articles.GetBySlugAsync(slug, isAuth);
+        int? userId = isAuth
+            ? int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!)
+            : null;
+        var result = await articles.GetBySlugAsync(slug, isAuth, userId);
         return Ok(new ApiResponse<ArticleDetailResponse>(true, result));
     }
 

@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import type { Category } from '../types';
 import { articleApi, categoryApi, uploadApi } from '../api';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+
+const AUTOSAVE_KEY = 'csnews_draft_autosave';
 
 interface FormState {
   title: string; summary: string; content: string;
@@ -34,38 +36,71 @@ export function CreateArticlePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedSlug, setSavedSlug] = useState('');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  const initialLoadDone = useRef(false);
 
   // โหลด categories
   useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
 
-  // ถ้าเป็นโหมดแก้ไข — โหลดข้อมูลเดิม
+  // ถ้าเป็นโหมดแก้ไข — โหลดข้อมูลเดิม | ถ้าโหมดสร้างใหม่ — โหลดจาก Auto-save
   useEffect(() => {
-    if (!editSlug) return;
-    setLoading(true);
-    articleApi.getBySlug(editSlug)
-      .then(article => {
-        setEditId(article.id);
-        setForm({
-          title: article.title,
-          summary: article.summary,
-          content: article.content,
-          categoryId: article.categoryId,
-          tags: article.tags.join(', '),
-          isFeatured: article.isFeatured,
-          status: article.status as FormState['status'],
-          thumbnailUrl: article.thumbnailUrl ?? '',
-        });
-        // แสดง thumbnail เดิม
-        if (article.thumbnailUrl) {
-          const base = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
-          setThumbPreview(article.thumbnailUrl.startsWith('http')
-            ? article.thumbnailUrl
-            : `${base}${article.thumbnailUrl}`);
+    const loadData = async () => {
+      if (editSlug) {
+        setLoading(true);
+        try {
+          const article = await articleApi.getBySlug(editSlug);
+          setEditId(article.id);
+          setForm({
+            title: article.title,
+            summary: article.summary,
+            content: article.content,
+            categoryId: article.categoryId,
+            tags: article.tags.join(', '),
+            isFeatured: article.isFeatured,
+            status: article.status as FormState['status'],
+            thumbnailUrl: article.thumbnailUrl ?? '',
+          });
+          if (article.thumbnailUrl) {
+            const base = import.meta.env.VITE_API_URL ?? 'http://localhost:5000';
+            setThumbPreview(article.thumbnailUrl.startsWith('http')
+              ? article.thumbnailUrl
+              : `${base}${article.thumbnailUrl}`);
+          }
+        } catch (e: any) {
+          setError(e.message);
+        } finally {
+          setLoading(false);
+          initialLoadDone.current = true;
         }
-      })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
+      } else {
+        // โหมดสร้างใหม่ — ตรวจสอบ Auto-save
+        const saved = localStorage.getItem(AUTOSAVE_KEY);
+        if (saved) {
+          try {
+            setForm(JSON.parse(saved));
+            setLastSaved(new Date());
+          } catch { /* ignore */ }
+        }
+        initialLoadDone.current = true;
+      }
+    };
+    loadData();
   }, [editSlug]);
+
+  // Auto-save Logic (เฉพาะโหมดสร้างใหม่)
+  useEffect(() => {
+    if (editId || !initialLoadDone.current) return;
+
+    const timer = setTimeout(() => {
+      if (form.title || form.content) {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(form));
+        setLastSaved(new Date());
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [form, editId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -144,6 +179,9 @@ export function CreateArticlePage() {
         if (publish) await articleApi.publish(article.id);
 
         slug = article.slug;
+        
+        // ล้าง Auto-save เมื่อสำเร็จ
+        localStorage.removeItem(AUTOSAVE_KEY);
       }
 
       setSavedSlug(slug);
@@ -190,7 +228,10 @@ export function CreateArticlePage() {
           <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "'Playfair Display',serif" }}>
             {editId ? '✏️ แก้ไขบทความ' : '✍️ เขียนข่าวใหม่'}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">โดย <strong>{user?.username}</strong></p>
+          <p className="text-slate-500 text-sm mt-1">
+            โดย <strong>{user?.username}</strong>
+            {lastSaved && !editId && <span className="ml-3 text-slate-400 italic text-xs">บันทึกร่างอัตโนมัติแล้วเมื่อ {lastSaved.toLocaleTimeString()}</span>}
+          </p>
         </div>
         <Link to={editId ? `/articles/${editSlug}` : '/'} className="text-sm text-slate-400 hover:text-slate-700 transition-colors">
           ← ยกเลิก

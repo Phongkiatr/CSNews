@@ -4,6 +4,7 @@ import type { ArticleDetail } from '../types';
 import { articleApi } from '../api';
 import { formatDate, formatNum, formatSize, getImageUrl } from '../utils/format';
 import { useAuthStore } from '../store/useAuthStore';
+import DOMPurify from 'dompurify';
 
 export function ArticleDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -104,7 +105,7 @@ export function ArticleDetailPage() {
 
       {/* Content */}
       <div className="prose max-w-none text-slate-700 text-base leading-8"
-        dangerouslySetInnerHTML={{ __html: article.content }} />
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }} />
 
       {/* Tags */}
       {article.tags.length > 0 && (

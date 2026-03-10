@@ -8,7 +8,7 @@ interface NavbarProps {
 }
 
 const ROLE_BADGE: Record<string, string> = {
-  Admin:  'bg-amber-500/20 text-amber-400',
+  Admin: 'bg-amber-500/20 text-amber-400',
   Editor: 'bg-sky-500/20 text-sky-400',
   Reader: 'bg-slate-700 text-slate-400',
 };

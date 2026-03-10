@@ -24,7 +24,6 @@ public record LoginRequest(string Email, string Password);
 /// <summary>Response หลัง Login/Register สำเร็จ</summary>
 public record AuthResponse(
     string Token,         // JWT ใส่ใน Authorization: Bearer <token>
-    string RefreshToken,
     UserResponse User
 );
 
@@ -33,7 +32,7 @@ public record AuthResponse(
 // ============================================================
 
 /// <summary>ข้อมูล User ที่ปลอดภัย (ไม่มี PasswordHash)</summary>
-public record UserResponse(int Id, string Username, string Email, string Role, string? ProfileImage);
+public record UserResponse(int Id, string Username, string Email, string Role, string? ProfileImage, bool IsActive = true);
 
 // ============================================================
 // ARTICLE
@@ -98,3 +97,10 @@ public record PagedResponse<T>(List<T> Items, int TotalCount, int Page, int Page
 
 /// <summary>Wrapper มาตรฐานทุก API Response</summary>
 public record ApiResponse<T>(bool Success, T Data, string? Message = null);
+
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
+
+/// <summary>Body ของ PATCH /api/users/{id}/role</summary>
+public record ChangeRoleRequest(string Role);

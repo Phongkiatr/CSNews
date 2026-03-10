@@ -5,9 +5,9 @@ import { useAuthStore } from '../store/useAuthStore';
 export function LoginPage() {
   const navigate = useNavigate();
   const { login, isLoading } = useAuthStore();
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error,    setError]    = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +48,9 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const { register, isLoading } = useAuthStore();
   const [username, setUsername] = useState('');
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error,    setError]    = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +93,7 @@ export function RegisterPage() {
 
 // ── Shared components ────────────────────────────────────────
 const inputCls = "w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all";
-const btnCls   = "w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors";
+const btnCls = "w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors";
 
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (

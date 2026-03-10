@@ -9,16 +9,6 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UnauthorizedPage, NotFoundPage } from './pages/ErrorPages';
 import { MyArticlesPage } from './pages/MyArticlesPage';
 
-// Inject Google Fonts
-(function injectFonts() {
-  if (document.getElementById('csnews-fonts')) return;
-  const link = document.createElement('link');
-  link.id = 'csnews-fonts';
-  link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap';
-  document.head.appendChild(link);
-})();
-
 // Guard: ต้อง Login ก่อน
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -62,31 +52,31 @@ function AppRoutes() {
   return (
     <Layout fullscreen={isAdmin}>
       <Routes>
-          {/* Public */}
-          <Route path="/"                  element={<HomePage />} />
-          <Route path="/articles/:slug"    element={<ArticleDetailPage />} />
-          <Route path="/login"             element={<LoginPage />} />
-          <Route path="/register"          element={<RegisterPage />} />
-          <Route path="/unauthorized"      element={<UnauthorizedPage />} />
+        {/* Public */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/articles/:slug" element={<ArticleDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* Protected: ต้อง Login */}
-          <Route path="/create" element={
-            <RequireAuth><CreateArticlePage /></RequireAuth>
-          } />
+        {/* Protected: ต้อง Login */}
+        <Route path="/create" element={
+          <RequireAuth><CreateArticlePage /></RequireAuth>
+        } />
 
-          {/* Protected: Editor + Admin */}
-          <Route path="/my-articles" element={
-            <RequireAuth><MyArticlesPage /></RequireAuth>
-          } />
+        {/* Protected: Editor + Admin */}
+        <Route path="/my-articles" element={
+          <RequireAuth><MyArticlesPage /></RequireAuth>
+        } />
 
-          {/* Protected: Admin only */}
-          <Route path="/admin" element={
-            <RequireAdmin><AdminDashboard /></RequireAdmin>
-          } />
+        {/* Protected: Admin only */}
+        <Route path="/admin" element={
+          <RequireAdmin><AdminDashboard /></RequireAdmin>
+        } />
 
-          {/* 404 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        {/* 404 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
     </Layout>
   );
 }

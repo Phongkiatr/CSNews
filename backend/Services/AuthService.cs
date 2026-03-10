@@ -10,7 +10,7 @@
 // ============================================================
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
+
 using System.Text;
 using CSNews.Data;
 using CSNews.Models.DTOs;
@@ -81,7 +81,7 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 
     // ── Private ─────────────────────────────────────────────
     private AuthResponse Build(User user) =>
-        new(GenerateJwt(user), GenerateRefreshToken(), ToDto(user));
+        new(GenerateJwt(user), ToDto(user));
 
     private string GenerateJwt(User user)
     {
@@ -109,13 +109,8 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private static string GenerateRefreshToken()
-    {
-        var b = new byte[64];
-        RandomNumberGenerator.Fill(b);
-        return Convert.ToBase64String(b);
-    }
+
 
     private static UserResponse ToDto(User u) =>
-        new(u.Id, u.Username, u.Email, u.Role, u.ProfileImage);
+        new(u.Id, u.Username, u.Email, u.Role, u.ProfileImage, u.IsActive);
 }

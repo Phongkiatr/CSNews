@@ -34,6 +34,9 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // ── 2. JWT Authentication ─────────────────────────────────────────────────────
 // ตั้งค่า JWT Bearer Token validation
 var jwtKey = builder.Configuration["Jwt:SecretKey"]!;
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("SET_VIA_"))
+    throw new InvalidOperationException(
+        "Jwt:SecretKey ไม่ได้ตั้งค่า — กรุณาตั้งค่าผ่าน environment variable 'Jwt__SecretKey' หรือ appsettings.Development.json");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>
     {
@@ -59,6 +62,7 @@ builder.Services.AddScoped<IAuthService,     AuthService>();
 builder.Services.AddScoped<IArticleService,  ArticleService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFileService,     FileService>();
+builder.Services.AddScoped<IUserService,     UserService>();
 
 // ── 4. CORS — อนุญาต Frontend เชื่อมต่อ ──────────────────────────────────────
 builder.Services.AddCors(opt => opt.AddPolicy("FrontendPolicy", p =>
