@@ -148,7 +148,7 @@ app.UseMiddleware<JwtMiddleware>();
 app.UseAuthorization();
 
 // ── 6. Health Check สำหรับ UptimeRobot ─────────────────────────────────────
-app.MapGet("/api/health", () => Results.Ok(new { Status = "OK", Message = "Backend is alive" }));
+app.MapMethods("/api/health", new[] { "GET", "HEAD" }, () => Results.Ok(new { Status = "OK", Message = "Backend is alive" }));
 
 // ── 7. Map Controllers ──────────────────────────────────────────────────────────
 app.MapControllers();
