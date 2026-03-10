@@ -16,11 +16,11 @@ public class AuthController(IAuthService authService) : ControllerBase
         try
         {
             var res = await authService.RegisterAsync(req);
-            return Ok(new ApiResponse<AuthResponse>(res));
+            return Ok(new ApiResponse<AuthResponse>(true, res));
         }
         catch (InvalidOperationException ex)
         {
-            return BadRequest(new ApiResponse<object>(null, ex.Message));
+            return BadRequest(new ApiResponse<object>(false, null!, ex.Message));
         }
     }
 
@@ -30,15 +30,15 @@ public class AuthController(IAuthService authService) : ControllerBase
         try
         {
             var res = await authService.LoginAsync(req);
-            return Ok(new ApiResponse<AuthResponse>(res));
+            return Ok(new ApiResponse<AuthResponse>(true, res));
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(new ApiResponse<object>(null, ex.Message));
+            return NotFound(new ApiResponse<object>(false, null!, ex.Message));
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(new ApiResponse<object>(null, ex.Message));
+            return Unauthorized(new ApiResponse<object>(false, null!, ex.Message));
         }
     }
 
@@ -53,6 +53,6 @@ public class AuthController(IAuthService authService) : ControllerBase
             Email      = User.FindFirstValue(ClaimTypes.Email),
             Role       = User.FindFirstValue(ClaimTypes.Role)
         };
-        return Ok(new ApiResponse<object>(user));
+        return Ok(new ApiResponse<object>(true, user));
     }
 }
