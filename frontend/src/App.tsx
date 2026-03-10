@@ -8,6 +8,9 @@ import { CreateArticlePage } from './pages/CreateArticlePage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UnauthorizedPage, NotFoundPage } from './pages/ErrorPages';
 import { MyArticlesPage } from './pages/MyArticlesPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { ContactPage } from './pages/ContactPage';
+import { Link } from 'react-router-dom';
 
 // Guard: ต้อง Login ก่อน
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -27,18 +30,18 @@ function Layout({ children, fullscreen = false }: { children: React.ReactNode; f
   const { user, logout } = useAuthStore();
   if (fullscreen) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white">
       <Navbar user={user} onLogout={logout} />
-      <main className="flex-1">{children}</main>
+      <main>{children}</main>
       <footer className="bg-slate-950 text-slate-400 py-8 mt-12" style={{ fontFamily: "'DM Sans',sans-serif" }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-2xl font-black text-white" style={{ fontFamily: "'Playfair Display',serif" }}>
             CSNews
           </span>
           <p className="text-sm text-center">© 2568 CSNews — ข่าวสารทันโลก อัปเดตทุกวัน</p>
-          <div className="flex gap-4 text-xs">
-            <a href="#" className="hover:text-white transition-colors">นโยบายความเป็นส่วนตัว</a>
-            <a href="#" className="hover:text-white transition-colors">ติดต่อเรา</a>
+          <div className="flex gap-4 text-xs font-medium">
+            <Link to="/privacy" className="hover:text-amber-400 transition-colors">นโยบายความเป็นส่วนตัว</Link>
+            <Link to="/contact" className="hover:text-amber-400 transition-colors">ติดต่อเรา</Link>
           </div>
         </div>
       </footer>
@@ -57,6 +60,8 @@ function AppRoutes() {
         <Route path="/articles/:slug" element={<ArticleDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
         {/* Protected: ต้อง Login */}
