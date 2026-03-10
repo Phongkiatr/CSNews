@@ -28,7 +28,8 @@ var builder = WebApplication.CreateBuilder(args);
 // ── 1. Database ───────────────────────────────────────────────────────────────
 // เลือกใช้ PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+       .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // ── 2. JWT Authentication ─────────────────────────────────────────────────────
 // ตั้งค่า JWT Bearer Token validation
