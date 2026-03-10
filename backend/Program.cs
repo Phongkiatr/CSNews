@@ -26,10 +26,9 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── 1. Database ───────────────────────────────────────────────────────────────
-// เลือกใช้ SQLite (ไม่ต้องติดตั้ง SQL Server)
-// เปลี่ยนเป็น UseSqlServer(...) เมื่อ deploy จริง
+// เลือกใช้ PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite("Data Source=csnews.db"));
+    opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ── 2. JWT Authentication ─────────────────────────────────────────────────────
 // ตั้งค่า JWT Bearer Token validation

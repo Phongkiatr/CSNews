@@ -73,7 +73,13 @@ public record UpdateArticleRequest(
 // ============================================================
 
 /// <summary>Response ของ GET /api/categories</summary>
-public record CategoryResponse(int Id, string Name, string Slug, string? Description, int ArticleCount);
+public record CategoryResponse(int Id, string Name, string Slug, string? Description, bool IsActive, int ArticleCount);
+
+/// <summary>Body ของ POST /api/categories</summary>
+public record CreateCategoryRequest(string Name, string? Description);
+
+/// <summary>Body ของ PUT /api/categories/{id}</summary>
+public record UpdateCategoryRequest(string Name, string? Description, bool IsActive);
 
 // ============================================================
 // FILE

@@ -1,15 +1,20 @@
 # ============================================================
 # .NET
 # ============================================================
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 *.user
 *.suo
 .vs/
+.vscode/
 *.db
 *.db-shm
 *.db-wal
-Migrations/
+
+# Sensitive configuration - DO NOT COMMIT TO GITHUB
+backend/appsettings.Development.json
+backend/appsettings.Local.json
+UserSecrets/
 
 # ============================================================
 # Frontend
@@ -18,16 +23,24 @@ node_modules/
 dist/
 .env
 .env.local
+.env.production
+.env.development
 
 # ============================================================
-# Docker
+# Docker & Others
 # ============================================================
 uploads/
-
-# ============================================================
-# OS
-# ============================================================
 .DS_Store
 Thumbs.db
+build.log
+build.txt
+error.log
 
+# ============================================================
+# Antigravity/Cursor
+# ============================================================
+.gemini/
+.agent/
+.agents/
+brain/
 skills/

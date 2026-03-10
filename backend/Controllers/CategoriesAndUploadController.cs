@@ -18,7 +18,34 @@ public class CategoriesController(ICategoryService categories) : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var result = await categories.GetAllAsync();
-        return Ok(new ApiResponse<List<CategoryResponse>>(true, result));
+        return Ok(new ApiResponse<IEnumerable<CategoryResponse>>(true, result));
+    }
+
+    // POST /api/categories
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
+    {
+        var result = await categories.CreateAsync(request);
+        return Ok(new ApiResponse<CategoryResponse>(true, result, "สร้างหมวดหมู่สำเร็จ"));
+    }
+
+    // PUT /api/categories/{id}
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request)
+    {
+        var result = await categories.UpdateAsync(id, request);
+        return Ok(new ApiResponse<CategoryResponse>(true, result, "แก้ไขหมวดหมู่สำเร็จ"));
+    }
+
+    // DELETE /api/categories/{id}
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await categories.DeleteAsync(id);
+        return Ok(new ApiResponse<string>(true, "ลบหมวดหมู่สำเร็จ"));
     }
 }
 
