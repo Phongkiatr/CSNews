@@ -22,7 +22,7 @@ export function ArticleCard({ article, variant = 'default' }: Props) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
           ) : (
             <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-              <span className="text-5xl opacity-20">📰</span>
+              <span className="la las la-newspaper text-5xl opacity-20 text-white"></span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
@@ -36,9 +36,9 @@ export function ArticleCard({ article, variant = 'default' }: Props) {
             </h3>
             <p className="text-slate-300 text-sm mt-2 line-clamp-2">{article.summary}</p>
             <div className="flex gap-4 mt-3 text-xs text-slate-400">
-              <span>✍️ {article.authorUsername}</span>
-              <span>👁 {formatNum(article.viewCount)}</span>
-              {article.publishedAt && <span>📅 {formatDate(article.publishedAt)}</span>}
+              <span className="flex items-center gap-1"><span className="la las la-user-edit"></span> {article.authorUsername}</span>
+              <span className="flex items-center gap-1"><span className="la las la-eye"></span> {formatNum(article.viewCount)}</span>
+              {article.publishedAt && <span className="flex items-center gap-1"><span className="la las la-calendar"></span> {formatDate(article.publishedAt)}</span>}
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@ export function ArticleCard({ article, variant = 'default' }: Props) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl opacity-20">📰</span>
+            <span className="la las la-newspaper text-4xl opacity-20"></span>
           </div>
         )}
       </div>
@@ -78,7 +78,7 @@ export function ArticleCard({ article, variant = 'default' }: Props) {
         <div className="flex gap-3 mt-3 text-xs text-slate-400">
           <span>{article.authorUsername}</span>
           <span>·</span>
-          <span>👁 {formatNum(article.viewCount)}</span>
+          <span className="flex items-center gap-1"><span className="la las la-eye"></span> {formatNum(article.viewCount)}</span>
         </div>
       </div>
     </button>

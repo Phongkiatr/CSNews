@@ -11,10 +11,10 @@ const STATUS_BADGE: Record<string, string> = {
   Archived:  'bg-slate-100 text-slate-500',
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  Published: '✅ เผยแพร่แล้ว',
-  Draft:     '📝 ร่าง',
-  Archived:  '📦 เก็บถาวร',
+const STATUS_LABEL: Record<string, { icon: string; text: string }> = {
+  Published: { icon: 'la-check-circle', text: 'เผยแพร่แล้ว' },
+  Draft:     { icon: 'la-edit',         text: 'ร่าง' },
+  Archived:  { icon: 'la-archive',      text: 'เก็บถาวร' },
 };
 
 export function MyArticlesPage() {
@@ -56,13 +56,13 @@ export function MyArticlesPage() {
   };
 
   const handlePublish = async (id: number) => {
-    try { await articleApi.publish(id); notify('เผยแพร่สำเร็จ ✅'); load(); }
+    try { await articleApi.publish(id); notify('เผยแพร่สำเร็จ ✓'); load(); }
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'เกิดข้อผิดพลาด', 'err'); }
   };
 
   const handleDelete = async (id: number, title: string) => {
     if (!confirm(`ลบบทความ "${title}" ?`)) return;
-    try { await articleApi.delete(id); notify('ลบสำเร็จ ✅'); load(); }
+    try { await articleApi.delete(id); notify('ลบสำเร็จ ✓'); load(); }
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'เกิดข้อผิดพลาด', 'err'); }
   };
 
@@ -100,12 +100,12 @@ export function MyArticlesPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: 'ทั้งหมด',      value: stats.total,     icon: '📰', cls: 'bg-sky-50 border-sky-200 text-sky-700' },
-          { label: 'เผยแพร่แล้ว', value: stats.published, icon: '✅', cls: 'bg-green-50 border-green-200 text-green-700' },
-          { label: 'ฉบับร่าง',    value: stats.draft,     icon: '📝', cls: 'bg-amber-50 border-amber-200 text-amber-700' },
+          { label: 'ทั้งหมด',      value: stats.total,     icon: 'la-newspaper', cls: 'bg-sky-50 border-sky-200 text-sky-700' },
+          { label: 'เผยแพร่แล้ว', value: stats.published, icon: 'la-check-circle', cls: 'bg-green-50 border-green-200 text-green-700' },
+          { label: 'ฉบับร่าง',    value: stats.draft,     icon: 'la-edit', cls: 'bg-amber-50 border-amber-200 text-amber-700' },
         ].map(s => (
           <div key={s.label} className={`border rounded-2xl p-5 ${s.cls}`}>
-            <div className="text-2xl mb-1">{s.icon}</div>
+            <div className="text-3xl mb-1"><span className={`la las ${s.icon}`}></span></div>
             <div className="text-2xl font-black">{s.value}</div>
             <div className="text-sm font-medium opacity-80">{s.label}</div>
           </div>
@@ -115,16 +115,17 @@ export function MyArticlesPage() {
       {/* Filter tabs */}
       <div className="flex gap-2 mb-5">
         {[
-          { key: '',          label: 'ทั้งหมด' },
-          { key: 'Published', label: '✅ เผยแพร่' },
-          { key: 'Draft',     label: '📝 ร่าง' },
-          { key: 'Archived',  label: '📦 เก็บถาวร' },
+          { key: '',          label: 'ทั้งหมด', icon: '' },
+          { key: 'Published', label: 'เผยแพร่', icon: 'la-check-circle' },
+          { key: 'Draft',     label: 'ร่าง',   icon: 'la-edit' },
+          { key: 'Archived',  label: 'เก็บถาวร', icon: 'la-archive' },
         ].map(f => (
           <button key={f.key} onClick={() => { setFilter(f.key); setPage(1); }}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
               filter === f.key
                 ? 'bg-slate-900 text-white'
                 : 'border border-slate-200 text-slate-500 hover:bg-slate-50'}`}>
+            {f.icon && <span className={`la las ${f.icon} text-base`}></span>}
             {f.label}
           </button>
         ))}
@@ -139,7 +140,7 @@ export function MyArticlesPage() {
         </div>
       ) : articles.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
-          <p className="text-4xl mb-3">📭</p>
+          <p className="text-5xl mb-3 text-slate-200"><span className="la las la-inbox"></span></p>
           <p className="text-lg font-medium">ยังไม่มีบทความ</p>
           <Link to="/create" className="mt-3 inline-block text-sm text-amber-600 hover:underline">
             เขียนข่าวแรกของคุณ →
@@ -157,15 +158,18 @@ export function MyArticlesPage() {
                   <img src={getImageUrl(a.thumbnailUrl)} alt={a.title}
                     className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl opacity-20">📰</div>
+                  <div className="w-full h-full flex items-center justify-center text-3xl opacity-20">
+                    <span className="la las la-newspaper"></span>
+                  </div>
                 )}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_BADGE[a.status] ?? ''}`}>
-                    {STATUS_LABEL[a.status] ?? a.status}
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${STATUS_BADGE[a.status] ?? ''}`}>
+                    <span className={`la las ${STATUS_LABEL[a.status]?.icon} text-[10px]`}></span>
+                    {STATUS_LABEL[a.status]?.text ?? a.status}
                   </span>
                   <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
                     {a.categoryName}
@@ -178,7 +182,11 @@ export function MyArticlesPage() {
                 <p className="text-xs text-slate-400 mt-1"
                   style={{ fontFamily: "'DM Mono',monospace" }}>
                   {formatDate(a.publishedAt ?? a.createdAt)}
-                  {a.viewCount > 0 && ` · 👁 ${a.viewCount}`}
+                  {a.viewCount > 0 && (
+                    <span className="flex items-center gap-1">
+                      · <span className="la las la-eye text-[10px]"></span> {a.viewCount}
+                    </span>
+                  )}
                 </p>
               </div>
 
@@ -186,13 +194,15 @@ export function MyArticlesPage() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 {a.status === 'Draft' && (
                   <button onClick={() => handlePublish(a.id)}
-                    className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors font-semibold">
-                    🚀 เผยแพร่
+                    className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center gap-1">
+                    <span className="la las la-rocket text-xs"></span>
+                    เผยแพร่
                   </button>
                 )}
                 <button onClick={() => navigate(`/create?edit=${a.slug}`)}
-                  className="text-xs border border-slate-300 text-slate-600 px-3 py-1.5 rounded-lg hover:border-amber-400 hover:text-amber-600 transition-colors">
-                  ✏️ แก้ไข
+                  className="text-xs border border-slate-300 text-slate-600 px-3 py-1.5 rounded-lg hover:border-amber-400 hover:text-amber-600 transition-colors flex items-center gap-1">
+                  <span className="la las la-edit text-xs"></span>
+                  แก้ไข
                 </button>
                 <button onClick={() => handleDelete(a.id, a.title)}
                   className="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">

@@ -29,7 +29,9 @@ export function ArticleDetailPage() {
   if (error) return (
     <PageShell>
       <div className="text-center py-20">
-        <p className="text-4xl mb-4">😔</p>
+        <p className="text-5xl mb-4 text-slate-300">
+          <span className="la las la-frown"></span>
+        </p>
         <p className="text-lg font-semibold text-slate-700 mb-2">{error}</p>
         <Link to="/" className="text-amber-600 hover:underline text-sm">← กลับหน้าแรก</Link>
       </div>
@@ -56,17 +58,22 @@ export function ArticleDetailPage() {
           {article.categoryName}
         </span>
         {article.isFeatured && (
-          <span className="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full font-semibold">⭐ แนะนำ</span>
+          <span className="bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+            <span className="la las la-star text-amber-500"></span>
+            แนะนำ
+          </span>
         )}
         {user && article.status !== 'Published' && (
-          <span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full">
-            📝 {article.status}
+          <span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full flex items-center gap-1">
+            <span className="la las la-edit"></span>
+            {article.status}
           </span>
         )}
         {canEdit && (
           <button onClick={() => navigate(`/create?edit=${article.slug}`)}
-            className="ml-auto text-xs border border-slate-300 text-slate-500 px-3 py-1 rounded-full hover:border-amber-400 hover:text-amber-600 transition-colors">
-            ✏️ แก้ไข
+            className="ml-auto text-xs border border-slate-300 text-slate-500 px-3 py-1 rounded-full hover:border-amber-400 hover:text-amber-600 transition-colors flex items-center gap-1">
+            <span className="la las la-edit"></span>
+            แก้ไข
           </button>
         )}
       </div>
@@ -90,9 +97,15 @@ export function ArticleDetailPage() {
           </div>
         </div>
         <span>·</span>
-        <span>📅 {formatDate(article.publishedAt ?? article.createdAt)}</span>
+        <span className="flex items-center gap-1">
+          <span className="la las la-calendar text-xs"></span>
+          {formatDate(article.publishedAt ?? article.createdAt)}
+        </span>
         <span>·</span>
-        <span>👁 {formatNum(article.viewCount)} ครั้ง</span>
+        <span className="flex items-center gap-1">
+          <span className="la las la-eye text-xs"></span>
+          {formatNum(article.viewCount)} ครั้ง
+        </span>
       </div>
 
       {/* Thumbnail */}
@@ -122,12 +135,17 @@ export function ArticleDetailPage() {
       {/* Files */}
       {article.files.length > 0 && (
         <div className="mt-8 p-5 bg-slate-50 border border-slate-200 rounded-xl">
-          <h3 className="font-bold text-slate-700 mb-3 text-sm">📎 ไฟล์แนบ ({article.files.length})</h3>
+          <h3 className="font-bold text-slate-700 mb-3 text-sm flex items-center gap-1.5">
+            <span className="la las la-paperclip"></span>
+            ไฟล์แนบ ({article.files.length})
+          </h3>
           <div className="space-y-2">
             {article.files.map(f => (
               <a key={f.id} href={getImageUrl(f.filePath)} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 text-sm text-slate-700 bg-white px-4 py-2.5 rounded-lg border border-slate-200 hover:border-amber-400 hover:text-amber-700 transition-all">
-                <span>{f.fileType === 'image' ? '🖼️' : '📄'}</span>
+                <span className="la las text-slate-400 text-lg">
+                  {f.fileType === 'image' ? 'la-image' : 'la-file-alt'}
+                </span>
                 <span className="flex-1">{f.originalFileName}</span>
                 <span className="text-xs text-slate-400">{formatSize(f.fileSize)}</span>
               </a>

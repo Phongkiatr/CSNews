@@ -125,7 +125,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function ErrorBox({ msg }: { msg: string }) {
   return (
     <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
-      ⚠️ {msg}
+          <span className="la las la-exclamation-triangle"></span> {msg}
     </div>
   );
 }

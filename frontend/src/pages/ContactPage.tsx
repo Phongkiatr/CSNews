@@ -39,7 +39,9 @@ export function ContactPage() {
 
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <div className="p-3 bg-amber-500/10 text-amber-600 rounded-xl text-xl">📧</div>
+              <div className="p-3 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center">
+                <span className="las la-envelope text-xl"></span>
+              </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">อีเมล</p>
                 <p className="text-slate-800 font-medium">contact@csnews.com</p>
@@ -47,7 +49,9 @@ export function ContactPage() {
             </div>
             
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <div className="p-3 bg-sky-500/10 text-sky-600 rounded-xl text-xl">📍</div>
+              <div className="p-3 bg-sky-500/10 text-sky-600 rounded-xl flex items-center justify-center">
+                <span className="las la-map-marker text-xl"></span>
+              </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">ที่อยู่</p>
                 <p className="text-slate-800 font-medium leading-tight">
@@ -57,7 +61,9 @@ export function ContactPage() {
             </div>
 
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-              <div className="p-3 bg-violet-500/10 text-violet-600 rounded-xl text-xl">💬</div>
+              <div className="p-3 bg-violet-500/10 text-violet-600 rounded-xl flex items-center justify-center">
+                <span className="las la-comments text-xl"></span>
+              </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">โซเชียลมีเดีย</p>
                 <div className="flex gap-3 mt-1">

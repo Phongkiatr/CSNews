@@ -198,7 +198,9 @@ export function CreateArticlePage() {
 
   if (savedSlug) return (
     <div className="max-w-2xl mx-auto px-6 py-20 text-center" style={{ fontFamily: "'DM Sans',sans-serif" }}>
-      <div className="text-6xl mb-4">✅</div>
+      <div className="text-6xl mb-4 text-emerald-500">
+        <span className="la las la-check-circle"></span>
+      </div>
       <h2 className="text-2xl font-black text-slate-900 mb-2" style={{ fontFamily: "'Playfair Display',serif" }}>
         {editId ? 'แก้ไขสำเร็จ!' : 'บันทึกสำเร็จ!'}
       </h2>
@@ -225,8 +227,10 @@ export function CreateArticlePage() {
     <div className="max-w-3xl mx-auto px-6 py-10" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "'Playfair Display',serif" }}>
-            {editId ? '✏️ แก้ไขบทความ' : '✍️ เขียนข่าวใหม่'}
+          <h1 className="text-3xl font-black text-slate-900 flex items-center gap-2"
+            style={{ fontFamily: "'Playfair Display',serif" }}>
+            <span className="la las la-edit"></span>
+            {editId ? 'แก้ไขบทความ' : 'เขียนข่าวใหม่'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             โดย <strong>{user?.username}</strong>
@@ -240,7 +244,7 @@ export function CreateArticlePage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-6">
-          ⚠️ {error}
+          <span className="la las la-exclamation-triangle"></span> {error}
         </div>
       )}
 
@@ -307,7 +311,9 @@ export function CreateArticlePage() {
             </div>
           ) : (
             <label htmlFor="thumb" className="flex flex-col items-center justify-center h-32 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors">
-              <span className="text-3xl mb-2">🖼️</span>
+              <span className="text-3xl mb-2 text-slate-400">
+                <span className="la las la-image"></span>
+              </span>
               <span className="text-sm font-medium">คลิกเพื่ออัปโหลดรูปหน้าปก</span>
               <span className="text-xs mt-1">PNG, JPG, WEBP (max 10MB)</span>
             </label>
@@ -322,7 +328,7 @@ export function CreateArticlePage() {
               onChange={handleFiles} className="hidden" id="attachments" />
             <label htmlFor="attachments"
               className="flex items-center gap-2 text-sm text-amber-600 font-semibold cursor-pointer hover:text-amber-700 transition-colors w-fit">
-              <span>📎</span> เพิ่มไฟล์แนบ
+              <span className="la las la-paperclip"></span> เพิ่มไฟล์แนบ
             </label>
             {attachments.length > 0 && (
               <ul className="mt-3 space-y-1">
@@ -346,20 +352,23 @@ export function CreateArticlePage() {
             <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={handleChange} className="sr-only" />
             <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${form.isFeatured ? 'translate-x-5' : ''}`} />
           </div>
-          <span className="text-sm font-medium text-slate-700">⭐ ปักหมุดเป็นข่าวแนะนำ</span>
+          <span className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+            <span className="la las la-star text-amber-500"></span>
+            ปักหมุดเป็นข่าวแนะนำ
+          </span>
         </label>
 
         {/* Actions */}
         <div className="flex gap-3 pt-4 border-t border-slate-200">
           <button type="submit" disabled={saving}
-            className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors">
-            {saving ? 'กำลังบันทึก...' : editId ? '💾 บันทึกการแก้ไข' : '💾 บันทึกร่าง'}
+            className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors flex items-center justify-center gap-2">
+            {saving ? 'กำลังบันทึก...' : editId ? <><span className="la las la-save"></span> บันทึกการแก้ไข</> : <><span className="la las la-save"></span> บันทึกร่าง</>}
           </button>
           {!editId && user && ['Editor', 'Admin'].includes(user.role) && (
             <button type="button" disabled={saving}
               onClick={e => handleSubmit(e as React.FormEvent, true)}
-              className="px-6 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-amber-400 disabled:opacity-60 transition-colors">
-              🚀 เผยแพร่
+              className="px-6 bg-amber-500 text-slate-950 font-bold py-3 rounded-xl hover:bg-amber-400 disabled:opacity-60 transition-colors flex items-center gap-2">
+              <span className="la las la-rocket"></span> เผยแพร่
             </button>
           )}
         </div>

@@ -7,9 +7,9 @@ import { formatDate } from '../../utils/format';
 
 // ── Sidebar nav items ─────────────────────────────────────────
 const NAV = [
-  { icon: '▣', label: 'Dashboard', tab: 'overview' },
-  { icon: '📰', label: 'บทความ', tab: 'articles' },
-  { icon: '👥', label: 'ผู้ใช้งาน', tab: 'users' },
+  { icon: 'la-chart-bar', label: 'Dashboard', tab: 'overview' },
+  { icon: 'la-newspaper', label: 'บทความ', tab: 'articles' },
+  { icon: 'la-users',     label: 'ผู้ใช้งาน', tab: 'users' },
 ];
 
 const ROLE_COLOR: Record<string, string> = {
@@ -160,7 +160,7 @@ export function AdminDashboard() {
                 ? 'bg-amber-500/10 text-amber-400 font-semibold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}>
-              <span className="text-base">{n.icon}</span>
+              <span className={`las ${n.icon} text-xl`}></span>
               <span>{n.label}</span>
               {tab === n.tab && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-500" />}
             </button>
@@ -169,11 +169,11 @@ export function AdminDashboard() {
           <p className="text-xs font-bold tracking-widest text-slate-600 px-3 pt-5 pb-1 uppercase">ลิงก์ด่วน</p>
           <Link to="/create"
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-            <span>✏️</span><span>เขียนข่าวใหม่</span>
+            <span className="las la-edit text-lg"></span><span>เขียนข่าวใหม่</span>
           </Link>
           <Link to="/"
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
-            <span>🌐</span><span>ดูหน้าเว็บ</span>
+            <span className="las la-globe text-lg"></span><span>ดูหน้าเว็บ</span>
           </Link>
         </nav>
 
@@ -230,18 +230,18 @@ export function AdminDashboard() {
               {/* Stats cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'บทความทั้งหมด', value: stats.total, icon: '📰', delta: 'บทความ', color: 'from-sky-500/20 to-sky-600/5', border: 'border-sky-500/20', text: 'text-sky-400' },
-                  { label: 'เผยแพร่แล้ว', value: stats.published, icon: '✅', delta: 'Published', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400' },
-                  { label: 'ฉบับร่าง', value: stats.draft, icon: '📝', delta: 'Draft', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400' },
-                  { label: 'ผู้ใช้งาน', value: stats.totalUsers, icon: '👥', delta: 'Users', color: 'from-violet-500/20 to-violet-600/5', border: 'border-violet-500/20', text: 'text-violet-400' },
+                  { label: 'บทความทั้งหมด', value: stats.total, icon: 'la-newspaper', delta: 'Articles', color: 'from-sky-500/20 to-sky-600/5', border: 'border-sky-500/20', text: 'text-sky-400' },
+                  { label: 'เผยแพร่แล้ว', value: stats.published, icon: 'la-check-circle', delta: 'Published', color: 'from-emerald-500/20 to-emerald-600/5', border: 'border-emerald-500/20', text: 'text-emerald-400' },
+                  { label: 'ฉบับร่าง', value: stats.draft, icon: 'la-edit', delta: 'Draft', color: 'from-amber-500/20 to-amber-600/5', border: 'border-amber-500/20', text: 'text-amber-400' },
+                  { label: 'ผู้ใช้งาน', value: stats.totalUsers, icon: 'la-users', delta: 'Users', color: 'from-violet-500/20 to-violet-600/5', border: 'border-violet-500/20', text: 'text-violet-400' },
                 ].map(s => (
                   <div key={s.label}
                     className={`bg-gradient-to-br ${s.color} border ${s.border} rounded-2xl p-5`}>
                     <div className="flex items-start justify-between mb-4">
-                      <div className={`w-10 h-10 rounded-xl bg-slate-900/60 flex items-center justify-center text-xl`}>
-                        {s.icon}
+                      <div className={`w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center`}>
+                        <span className={`la las ${s.icon} text-2xl ${s.text}`}></span>
                       </div>
-                      <span className={`text-xs font-mono ${s.text} opacity-60`}>{s.delta}</span>
+                      <span className={`text-xs font-mono font-bold ${s.text}`}>{s.delta}</span>
                     </div>
                     <div className="text-3xl font-black text-white mb-0.5">{s.value}</div>
                     <div className="text-slate-400 text-sm">{s.label}</div>

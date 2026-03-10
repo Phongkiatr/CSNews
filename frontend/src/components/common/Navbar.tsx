@@ -97,20 +97,20 @@ export function Navbar({ user, onLogout }: NavbarProps) {
                       <Link to="/my-articles"
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                        <span>📝</span> โพสต์ของฉัน
+                        <span className="la las la-edit text-lg"></span> โพสต์ของฉัน
                       </Link>
                     )}
                     {user.role === 'Admin' && (
                       <Link to="/admin"
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                        <span>⚙️</span> Dashboard
+                        <span className="la las la-cog text-lg"></span> Dashboard
                       </Link>
                     )}
                     <div className="border-t border-slate-700" />
                     <button onClick={handleLogout}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-slate-800 transition-colors">
-                      <span>→</span> ออกจากระบบ
+                      <span className="la las la-sign-out-alt text-lg"></span> ออกจากระบบ
                     </button>
                   </div>
                 )}

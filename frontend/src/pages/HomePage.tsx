@@ -116,7 +116,10 @@ export function HomePage() {
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-6 flex items-center justify-between">
-            <span>⚠️ {error}</span>
+            <span className="flex items-center gap-2">
+              <span className="la las la-exclamation-triangle text-lg"></span>
+              {error}
+            </span>
             <button onClick={fetchArticles} className="text-xs font-semibold underline">ลองใหม่</button>
           </div>
         )}
@@ -160,7 +163,9 @@ export function HomePage() {
 
         {!loading && articles.length === 0 && !error && (
           <div className="text-center py-20 text-slate-400">
-            <p className="text-4xl mb-3">🔍</p>
+            <p className="mb-3 text-slate-200">
+              <span className="la las la-search text-6xl"></span>
+            </p>
             <p className="text-lg font-medium">ไม่พบข่าวที่ค้นหา</p>
             {search && (
               <button onClick={() => { setSearchInput(''); setSearchParams({}); }}

@@ -5,7 +5,9 @@ export function UnauthorizedPage() {
     <div className="min-h-[70vh] flex items-center justify-center text-center px-6"
       style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div>
-        <p className="text-6xl mb-4">🔒</p>
+        <p className="mb-4 text-slate-200">
+          <span className="la las la-lock text-7xl"></span>
+        </p>
         <h1 className="text-2xl font-black text-slate-900 mb-2"
           style={{ fontFamily: "'Playfair Display',serif" }}>
           ไม่มีสิทธิ์เข้าถึง
@@ -24,7 +26,9 @@ export function NotFoundPage() {
     <div className="min-h-[70vh] flex items-center justify-center text-center px-6"
       style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div>
-        <p className="text-6xl mb-4">🔍</p>
+        <p className="mb-4 text-slate-200">
+          <span className="la las la-exclamation-triangle text-lg"></span>
+        </p>
         <h1 className="text-2xl font-black text-slate-900 mb-2"
           style={{ fontFamily: "'Playfair Display',serif" }}>
           ไม่พบหน้าที่ต้องการ
