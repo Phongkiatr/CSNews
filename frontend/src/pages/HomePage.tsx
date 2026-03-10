@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import type { ArticleListItem, Category } from '../types';
 import { articleApi, categoryApi } from '../api';
 import { ArticleCard } from '../components/article/ArticleCard';
 
 export function HomePage() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
