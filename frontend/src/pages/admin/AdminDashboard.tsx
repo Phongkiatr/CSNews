@@ -149,8 +149,8 @@ export function AdminDashboard() {
           {NAV.map(n => (
             <button key={n.tab} onClick={() => setTab(n.tab)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${tab === n.tab
-                  ? 'bg-amber-500/10 text-amber-400 font-semibold'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-amber-500/10 text-amber-400 font-semibold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}>
               <span className="text-base">{n.icon}</span>
               <span>{n.label}</span>
@@ -209,8 +209,8 @@ export function AdminDashboard() {
           {/* ── Toast ─────────────────────────────────────── */}
           {toast && (
             <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-xl border transition-all ${toast.ok
-                ? 'bg-slate-900 border-emerald-500/40 text-emerald-400'
-                : 'bg-slate-900 border-red-500/40 text-red-400'
+              ? 'bg-slate-900 border-emerald-500/40 text-emerald-400'
+              : 'bg-slate-900 border-red-500/40 text-red-400'
               }`}>
               {toast.msg}
             </div>
@@ -323,8 +323,8 @@ export function AdminDashboard() {
                     {['', 'Published', 'Draft', 'Archived'].map(s => (
                       <button key={s} onClick={() => { setArtFilter(s); setArtPage(1); }}
                         className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${artFilter === s
-                            ? 'bg-amber-500 text-slate-950'
-                            : 'bg-slate-800 text-slate-400 hover:text-white'
+                          ? 'bg-amber-500 text-slate-950'
+                          : 'bg-slate-800 text-slate-400 hover:text-white'
                           }`}>
                         {s || 'ทั้งหมด'}
                       </button>
@@ -338,7 +338,7 @@ export function AdminDashboard() {
 
                 {loading ? <LoadingSkeleton /> : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full min-w-max text-sm">
                       <thead>
                         <tr className="border-b border-slate-800">
                           {['หัวข้อ', 'หมวด', 'ผู้เขียน', 'สถานะ', 'วันที่', ''].map(h => (
@@ -440,7 +440,7 @@ export function AdminDashboard() {
 
                 {loading ? <LoadingSkeleton /> : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full min-w-max text-sm">
                       <thead>
                         <tr className="border-b border-slate-800">
                           {['ผู้ใช้', 'อีเมล', 'Role', 'สถานะ', 'การจัดการ'].map(h => (
@@ -480,8 +480,8 @@ export function AdminDashboard() {
                             {/* Active status */}
                             <td className="px-5 py-3.5">
                               <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${u.isActive !== false
-                                  ? 'bg-emerald-500/15 text-emerald-400'
-                                  : 'bg-red-500/15 text-red-400'
+                                ? 'bg-emerald-500/15 text-emerald-400'
+                                : 'bg-red-500/15 text-red-400'
                                 }`}>
                                 {u.isActive !== false ? '● Active' : '● Suspended'}
                               </span>
@@ -502,8 +502,8 @@ export function AdminDashboard() {
                                 {u.id !== user?.id && (
                                   <button onClick={() => handleSuspend(u)}
                                     className={`text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${u.isActive !== false
-                                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
-                                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+                                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
+                                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
                                       }`}>
                                     {u.isActive !== false ? 'ระงับ' : 'คืนสิทธิ์'}
                                   </button>
@@ -559,8 +559,8 @@ export function AdminDashboard() {
               {['Reader', 'Editor', 'Admin'].map(role => (
                 <button key={role} onClick={() => handleChangeRole(roleModal.id, role)}
                   className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium border transition-all ${roleModal.role === role
-                      ? `${ROLE_COLOR[role]} opacity-100`
-                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'
+                    ? `${ROLE_COLOR[role]} opacity-100`
+                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500 hover:text-white'
                     }`}>
                   <span>{role}</span>
                   {roleModal.role === role && <span className="text-xs opacity-60">ปัจจุบัน</span>}

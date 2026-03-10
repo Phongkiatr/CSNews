@@ -68,7 +68,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
               {/* + เขียนข่าว */}
               {['Editor', 'Admin'].includes(user.role) && (
                 <Link to="/create"
-                  className="hidden sm:block text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
+                  className="text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
                   + เขียนข่าว
                 </Link>
               )}
