@@ -27,9 +27,9 @@ function Layout({ children, fullscreen = false }: { children: React.ReactNode; f
   const { user, logout } = useAuthStore();
   if (fullscreen) return <>{children}</>;
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar user={user} onLogout={logout} />
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <footer className="bg-slate-950 text-slate-400 py-8 mt-12" style={{ fontFamily: "'DM Sans',sans-serif" }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-2xl font-black text-white" style={{ fontFamily: "'Playfair Display',serif" }}>
