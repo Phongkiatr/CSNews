@@ -66,7 +66,7 @@ builder.Services.AddScoped<IUserService,     UserService>();
 
 // ── 4. CORS — อนุญาต Frontend เชื่อมต่อ ──────────────────────────────────────
 builder.Services.AddCors(opt => opt.AddPolicy("FrontendPolicy", p =>
-    p.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "http://localhost:5173")
+    p.SetIsOriginAllowed(_ => true)
      .AllowAnyMethod()
      .AllowAnyHeader()
      .AllowCredentials()));
