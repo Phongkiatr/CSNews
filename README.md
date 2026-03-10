@@ -6,7 +6,7 @@
 
 ## Tech Stack
 
-**Backend:** .NET 10, ASP.NET Core Web API, Entity Framework Core, SQLite, JWT
+**Backend:** .NET 10, ASP.NET Core Web API, Entity Framework Core, PostgreSQL, JWT
 
 **Frontend:** React, TypeScript, Vite, Tailwind CSS, Axios
 
