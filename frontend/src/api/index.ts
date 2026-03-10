@@ -58,7 +58,7 @@ export const articleApi = {
 // ── Users (Admin) ────────────────────────────────────────────────────────────
 export const usersApi = {
   getAll: (params?: { page?: number; pageSize?: number }) =>
-    unwrap<PagedResult<import('../types').User>>(axiosClient.get('/users', { params })),
+    unwrap<import('../types').UserListResult>(axiosClient.get('/users', { params })),
 
   changeRole: (id: number, role: string) =>
     unwrap(axiosClient.patch(`/users/${id}/role`, { role })),

@@ -108,5 +108,11 @@ public record ApiResponse<T>(bool Success, T Data, string? Message = null);
 // USER MANAGEMENT
 // ============================================================
 
+/// <summary>Response ของ GET /api/users — เพิ่มจำนวน Admin/Editor ทั้งหมด</summary>
+public record UserListResponse(
+    List<UserResponse> Items, int TotalCount, int Page, int PageSize, int TotalPages,
+    int AdminCount, int EditorCount
+);
+
 /// <summary>Body ของ PATCH /api/users/{id}/role</summary>
 public record ChangeRoleRequest(string Role);

@@ -12,7 +12,7 @@ namespace CSNews.Services;
 
 public interface IUserService
 {
-    Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize);
+    Task<UserListResponse> GetAllAsync(int page, int pageSize);
     Task<UserResponse> ChangeRoleAsync(int id, string role, int myId);
     Task<UserResponse> ToggleSuspendAsync(int id, int myId);
     Task DeleteAsync(int id, int myId);
@@ -22,17 +22,23 @@ public class UserService(AppDbContext db) : IUserService
 {
     private static readonly string[] AllowedRoles = ["Reader", "Editor", "Admin"];
 
-    public async Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize)
+    public async Task<UserListResponse> GetAllAsync(int page, int pageSize)
     {
         var q     = db.Users.OrderByDescending(u => u.CreatedAt);
         var total = await q.CountAsync();
+        
+        // นับจำนวน Admin และ Editor ทั้งหมด (ไม่เกี่ยวกะ pagination)
+        var adminCount  = await db.Users.CountAsync(u => u.Role == "Admin");
+        var editorCount = await db.Users.CountAsync(u => u.Role == "Editor");
+
         var items = await q
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(u => new UserResponse(u.Id, u.Username, u.Email, u.Role, u.ProfileImage, u.IsActive))
             .ToListAsync();
 
-        return new PagedResponse<UserResponse>(items, total, page, pageSize,
-            (int)Math.Ceiling((double)total / pageSize));
+        return new UserListResponse(items, total, page, pageSize,
+            (int)Math.Ceiling((double)total / pageSize),
+            adminCount, editorCount);
     }
 
     public async Task<UserResponse> ChangeRoleAsync(int id, string role, int myId)

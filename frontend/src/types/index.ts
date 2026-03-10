@@ -86,6 +86,11 @@ export interface PagedResult<T> {
   totalPages: number;
 }
 
+export interface UserListResult extends PagedResult<User> {
+  adminCount: number;
+  editorCount: number;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data: T;

@@ -21,7 +21,7 @@ public class UsersController(IUserService users, IAuthService auth) : Controller
     public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         var result = await users.GetAllAsync(page, pageSize);
-        return Ok(new ApiResponse<PagedResponse<UserResponse>>(true, result));
+        return Ok(new ApiResponse<UserListResponse>(true, result));
     }
 
     // PATCH /api/users/{id}/role

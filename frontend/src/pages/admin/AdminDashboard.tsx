@@ -29,7 +29,10 @@ export function AdminDashboard() {
   const [tab, setTab] = useState('overview');
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState({ total: 0, published: 0, draft: 0, totalUsers: 0 });
+  const [stats, setStats] = useState({ 
+    total: 0, published: 0, draft: 0, 
+    totalUsers: 0, adminCount: 0, editorCount: 0 
+  });
   const [artFilter, setArtFilter] = useState('');
   const [artPage, setArtPage] = useState(1);
   const [artTotal, setArtTotal] = useState(1);
@@ -71,7 +74,12 @@ export function AdminDashboard() {
       const res = await usersApi.getAll({ page: userPage, pageSize: 12 });
       setUsers(res.items);
       setUserTotal(res.totalPages);
-      setStats(s => ({ ...s, totalUsers: res.totalCount }));
+      setStats(s => ({ 
+        ...s, 
+        totalUsers: res.totalCount,
+        adminCount: res.adminCount,
+        editorCount: res.editorCount
+      }));
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }, [userPage]);
@@ -422,8 +430,8 @@ export function AdminDashboard() {
               <div className="grid grid-cols-3 gap-4">
                 {[
                   { label: 'ผู้ใช้ทั้งหมด', value: stats.totalUsers, color: 'text-white' },
-                  { label: 'Admin', value: users.filter(u => u.role === 'Admin').length, color: 'text-amber-400' },
-                  { label: 'Editor', value: users.filter(u => u.role === 'Editor').length, color: 'text-sky-400' },
+                  { label: 'Admin', value: stats.adminCount, color: 'text-amber-400' },
+                  { label: 'Editor', value: stats.editorCount, color: 'text-sky-400' },
                 ].map(s => (
                   <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
                     <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
