@@ -40,7 +40,7 @@ function Layout({ children, fullscreen = false }: { children: React.ReactNode; f
       <footer className="bg-slate-950 text-slate-400 py-8 mt-12" style={{ fontFamily: "'DM Sans',sans-serif" }}>
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-2xl font-black text-white" style={{ fontFamily: "'Playfair Display',serif" }}>
-            CSNews
+            <span className="text-amber-400">CS</span>News
           </span>
           <p className="text-sm text-center">© 2568 CSNews — ข่าวสารทันโลก อัปเดตทุกวัน</p>
           <div className="flex gap-4 text-xs font-medium">
