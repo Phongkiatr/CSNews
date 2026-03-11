@@ -112,7 +112,7 @@ export function ArticleDetailPage() {
       {article.thumbnailUrl && (
         <div className="my-8 rounded-2xl overflow-hidden shadow-lg">
           <img src={getImageUrl(article.thumbnailUrl)} alt={article.title}
-            className="w-full object-cover max-h-96" />
+            className="w-full" />
         </div>
       )}
 
