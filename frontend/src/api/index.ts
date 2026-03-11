@@ -58,6 +58,9 @@ export const articleApi = {
 
   publish: (id: number) =>
     axiosClient.patch(`/articles/${id}/publish`),
+
+  archive: (id: number) =>
+    axiosClient.patch(`/articles/${id}/archive`),
 };
 
 // --- Users (Admin) ---

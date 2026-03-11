@@ -27,6 +27,7 @@ public interface IArticleService
     Task<ArticleDetailResponse> UpdateAsync(int id, UpdateArticleRequest req, int userId, string role);
     Task DeleteAsync(int id, int userId, string role);
     Task PublishAsync(int id);
+    Task ArchiveAsync(int id, int userId, string role);
     Task<PagedResponse<ArticleListResponse>> GetMyArticlesAsync(int userId, int page, int pageSize, string? status);
     Task<List<ArticleListResponse>> GetTrendingAsync(int top = 3);
 }
@@ -211,6 +212,19 @@ public class ArticleService(AppDbContext db) : IArticleService
 
         article.Status      = "Published";
         article.PublishedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+    }
+
+    // --- Archive ---
+    public async Task ArchiveAsync(int id, int userId, string role)
+    {
+        var article = await db.Articles.FindAsync(id)
+            ?? throw new KeyNotFoundException("Article not found");
+
+        if (role != "Admin" && article.AuthorId != userId)
+            throw new UnauthorizedAccessException("Not authorized to archive this article");
+
+        article.Status = "Archived";
         await db.SaveChangesAsync();
     }
 

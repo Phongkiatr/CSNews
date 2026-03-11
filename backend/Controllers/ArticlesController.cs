@@ -130,4 +130,16 @@ public class ArticlesController(IArticleService articles) : ControllerBase
         await articles.PublishAsync(id);
         return Ok(new ApiResponse<string>(true, "Article published successfully"));
     }
+
+    // PATCH /api/articles/{id}/archive
+    // Change status to Archived
+    [HttpPatch("{id:int}/archive")]
+    [Authorize]
+    public async Task<IActionResult> Archive(int id)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var role   = User.FindFirstValue(ClaimTypes.Role)!;
+        await articles.ArchiveAsync(id, userId, role);
+        return Ok(new ApiResponse<string>(true, "Article archived successfully"));
+    }
 }

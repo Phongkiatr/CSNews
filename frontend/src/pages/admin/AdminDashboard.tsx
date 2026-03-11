@@ -9,7 +9,7 @@ import { formatDate } from '../../utils/format';
 const NAV = [
   { icon: 'la-chart-bar', label: 'Dashboard', tab: 'overview' },
   { icon: 'la-newspaper', label: 'บทความ', tab: 'articles' },
-  { icon: 'la-users',     label: 'ผู้ใช้งาน', tab: 'users' },
+  { icon: 'la-users', label: 'ผู้ใช้งาน', tab: 'users' },
 ];
 
 const ROLE_COLOR: Record<string, string> = {
@@ -29,9 +29,9 @@ export function AdminDashboard() {
   const [tab, setTab] = useState('overview');
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState({ 
-    total: 0, published: 0, draft: 0, 
-    totalUsers: 0, adminCount: 0, editorCount: 0 
+  const [stats, setStats] = useState({
+    total: 0, published: 0, draft: 0,
+    totalUsers: 0, adminCount: 0, editorCount: 0
   });
   const [artFilter, setArtFilter] = useState('');
   const [artPage, setArtPage] = useState(1);
@@ -74,8 +74,8 @@ export function AdminDashboard() {
       const res = await usersApi.getAll({ page: userPage, pageSize: 12 });
       setUsers(res.items);
       setUserTotal(res.totalPages);
-      setStats(s => ({ 
-        ...s, 
+      setStats(s => ({
+        ...s,
         totalUsers: res.totalCount,
         adminCount: res.adminCount,
         editorCount: res.editorCount
@@ -90,6 +90,12 @@ export function AdminDashboard() {
   // --- Article actions ---
   const handlePublish = async (id: number) => {
     try { await articleApi.publish(id); notify('เผยแพร่สำเร็จ ✓'); loadArticles(); }
+    catch (e: unknown) { notify(e instanceof Error ? e.message : 'Error', false); }
+  };
+
+  const handleArchiveArticle = async (id: number) => {
+    if (!confirm('จัดเก็บบทความนี้?')) return;
+    try { await articleApi.archive(id); notify('จัดเก็บสำเร็จ ✓'); loadArticles(); }
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'Error', false); }
   };
 
@@ -384,6 +390,12 @@ export function AdminDashboard() {
                                   <button onClick={() => handlePublish(a.id)}
                                     className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg hover:bg-emerald-500/25 transition-colors font-medium">
                                     เผยแพร่
+                                  </button>
+                                )}
+                                {a.status !== 'Archived' && (
+                                  <button onClick={() => handleArchiveArticle(a.id)}
+                                    className="text-xs bg-slate-500/15 text-slate-400 border border-slate-500/30 px-2.5 py-1 rounded-lg hover:bg-slate-500/25 transition-colors font-medium">
+                                    จัดเก็บ
                                   </button>
                                 )}
                                 <Link to={`/create?edit=${a.slug}`}

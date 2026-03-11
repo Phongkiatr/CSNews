@@ -61,6 +61,12 @@ export function MyArticlesPage() {
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'เกิดข้อผิดพลาด', 'err'); }
   };
 
+  const handleArchive = async (id: number) => {
+    if (!confirm('จัดเก็บอาร์ไคฟ์บทความนี้?')) return;
+    try { await articleApi.archive(id); notify('จัดเก็บสำเร็จ ✓'); load(); }
+    catch (e: unknown) { notify(e instanceof Error ? e.message : 'เกิดข้อผิดพลาด', 'err'); }
+  };
+
   const handleDelete = async (id: number, title: string) => {
     if (!confirm(`ลบบทความ "${title}" ?`)) return;
     try { await articleApi.delete(id); notify('ลบสำเร็จ ✓'); load(); }
@@ -198,6 +204,13 @@ export function MyArticlesPage() {
                     className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center gap-1">
                     <span className="la las la-rocket text-xs"></span>
                     เผยแพร่
+                  </button>
+                )}
+                {a.status !== 'Archived' && (
+                  <button onClick={() => handleArchive(a.id)}
+                    className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors font-semibold flex items-center gap-1">
+                    <span className="la las la-archive text-xs"></span>
+                    จัดเก็บ
                   </button>
                 )}
                 <button onClick={() => navigate(`/create?edit=${a.slug}`)}
