@@ -51,7 +51,8 @@ export interface CreateArticlePayload {
 
 export interface UpdateArticlePayload extends CreateArticlePayload {
   status: 'Draft' | 'Published' | 'Archived';
-  thumbnailUrl?: string; // ← แก้ตรงนี้
+  /** Server-side path or URL of the thumbnail image. */
+  thumbnailUrl?: string;
 }
 
 export interface Category {

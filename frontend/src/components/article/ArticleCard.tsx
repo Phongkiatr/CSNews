@@ -1,3 +1,9 @@
+/**
+ * ArticleCard — displays an article preview in three variants:
+ *   - `hero`     : large banner with gradient overlay (for the main featured article)
+ *   - `featured` : medium banner (for secondary featured articles)
+ *   - `default`  : standard card with thumbnail + text
+ */
 import { useNavigate } from 'react-router-dom';
 import type { ArticleListItem } from '../../types';
 import { formatDate, formatNum, getImageUrl } from '../../utils/format';

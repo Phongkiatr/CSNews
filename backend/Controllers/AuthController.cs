@@ -1,3 +1,8 @@
+// ============================================================
+// Controllers/AuthController.cs
+// Route: /api/auth
+// Handles user registration, login, and session info.
+// ============================================================
 using CSNews.Models.DTOs;
 using CSNews.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -42,6 +47,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         }
     }
 
+    // GET /api/auth/me — returns the currently authenticated user's info
     [Authorize]
     [HttpGet("me")]
     public IActionResult GetMe()

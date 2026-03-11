@@ -15,18 +15,19 @@ export function HomePage() {
   const [totalCount, setTotalCount] = useState(0);
   const [searchInput, setSearchInput] = useState('');
 
-  // ดึง filter จาก URL
+  // Read filter state from URL query params
   const page = Number(searchParams.get('page') ?? 1);
   const search = searchParams.get('search') ?? '';
   const categoryName = searchParams.get('category') ?? '';
 
   useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
 
-  // หา categoryId จากชื่อ
+  // Resolve category name to ID
   const selectedCat = categories.find(c => c.name === categoryName)?.id;
 
   const fetchArticles = useCallback(async () => {
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
     try {
       const res = await articleApi.getAll({
         page, pageSize: 9,
@@ -70,7 +71,7 @@ export function HomePage() {
 
   return (
     <div style={{ fontFamily: "'DM Sans',sans-serif" }}>
-      {/* Hero */}
+      {/* Hero banner */}
       <div className="bg-slate-950 text-white px-6 py-10">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-black mb-2 leading-tight"
@@ -93,7 +94,7 @@ export function HomePage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Category filter */}
+        {/* Category filter tabs */}
         <div className="flex gap-2 flex-wrap mb-6 border-b border-slate-200 pb-4">
           <button onClick={() => handleCatChange(undefined)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${!categoryName ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'}`}>
@@ -108,12 +109,14 @@ export function HomePage() {
           ))}
         </div>
 
+        {/* Results count */}
         {!loading && (
           <p className="text-xs text-slate-400 mb-4" style={{ fontFamily: "'DM Mono',monospace" }}>
             พบ {totalCount.toLocaleString()} ข่าว{search && ` · ค้นหา "${search}"`}
           </p>
         )}
 
+        {/* Error message */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-6 flex items-center justify-between">
             <span className="flex items-center gap-2">
@@ -124,6 +127,7 @@ export function HomePage() {
           </div>
         )}
 
+        {/* Loading skeleton */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -139,6 +143,7 @@ export function HomePage() {
           </div>
         )}
 
+        {/* Featured articles */}
         {!loading && featured.length > 0 && (
           <section className="mb-10">
             <SectionLabel accent>ข่าวแนะนำ</SectionLabel>
@@ -152,6 +157,7 @@ export function HomePage() {
           </section>
         )}
 
+        {/* Latest articles */}
         {!loading && rest.length > 0 && (
           <section>
             <SectionLabel>ข่าวล่าสุด</SectionLabel>
@@ -161,6 +167,7 @@ export function HomePage() {
           </section>
         )}
 
+        {/* Empty state */}
         {!loading && articles.length === 0 && !error && (
           <div className="text-center py-20 text-slate-400">
             <p className="mb-3 text-slate-200">
@@ -176,6 +183,7 @@ export function HomePage() {
           </div>
         )}
 
+        {/* Pagination */}
         {!loading && totalPages > 1 && (
           <div className="flex gap-2 justify-center mt-10">
             <button disabled={page === 1} onClick={() => setPage(page - 1)}

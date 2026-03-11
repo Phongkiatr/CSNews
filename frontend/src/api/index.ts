@@ -6,10 +6,11 @@ import type {
   PagedResult, UploadResult,
 } from '../types';
 
+/** Unwraps the standard API envelope and returns only the `data` field. */
 const unwrap = <T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> =>
   promise.then((r) => r.data.data);
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// --- Auth ---
 export const authApi = {
   login: (payload: LoginPayload) =>
     unwrap<AuthResponse>(axiosClient.post('/auth/login', payload)),
@@ -21,9 +22,9 @@ export const authApi = {
     unwrap(axiosClient.get('/auth/me')),
 };
 
-// ── Articles ──────────────────────────────────────────────────────────────────
+// --- Articles ---
 export const articleApi = {
-  /** Public: ดูข่าวที่ Published */
+  /** Public: fetch published articles with optional filters. */
   getAll: (params?: {
     page?: number;
     pageSize?: number;
@@ -31,7 +32,7 @@ export const articleApi = {
     search?: string;
   }) => unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles', { params })),
 
-  /** Admin/Editor: ดูทุกสถานะ */
+  /** Admin/Editor: fetch articles of all statuses. */
   getAllAdmin: (params?: { page?: number; pageSize?: number; status?: string }) =>
     unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/admin', { params })),
 
@@ -47,7 +48,7 @@ export const articleApi = {
   delete: (id: number) =>
     axiosClient.delete(`/articles/${id}`),
 
-  /** ดูบทความของตัวเอง */
+  /** Fetch the current user's own articles. */
   getMine: (params?: { page?: number; pageSize?: number; status?: string }) =>
     unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/mine', { params })),
 
@@ -55,7 +56,7 @@ export const articleApi = {
     axiosClient.patch(`/articles/${id}/publish`),
 };
 
-// ── Users (Admin) ────────────────────────────────────────────────────────────
+// --- Users (Admin) ---
 export const usersApi = {
   getAll: (params?: { page?: number; pageSize?: number }) =>
     unwrap<import('../types').UserListResult>(axiosClient.get('/users', { params })),
@@ -73,13 +74,13 @@ export const usersApi = {
     axiosClient.delete(`/users/${id}`),
 };
 
-// ── Categories ────────────────────────────────────────────────────────────────
+// --- Categories ---
 export const categoryApi = {
   getAll: () =>
     unwrap<Category[]>(axiosClient.get('/categories')),
 };
 
-// ── Upload ────────────────────────────────────────────────────────────────────
+// --- Upload ---
 export const uploadApi = {
   uploadImage: (file: File) => {
     const form = new FormData();

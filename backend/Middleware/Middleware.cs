@@ -1,4 +1,3 @@
-// ใส่ using ทั้งหมดไว้บนสุดก่อนเสมอ
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
@@ -7,7 +6,7 @@ using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
 
 // ============================================================
-// Middleware/ExceptionMiddleware.cs — Global Error Handler
+// Middleware/ExceptionMiddleware.cs — Global error handler
 // ============================================================
 namespace CSNews.Middleware;
 
@@ -36,7 +35,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
             KeyNotFoundException        => (HttpStatusCode.NotFound,           ex.Message),
             ArgumentException           => (HttpStatusCode.BadRequest,         ex.Message),
             InvalidOperationException   => (HttpStatusCode.BadRequest,         ex.Message),
-            _                           => (HttpStatusCode.InternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์")
+            _                           => (HttpStatusCode.InternalServerError, "Internal server error")
         };
 
         ctx.Response.StatusCode = (int)code;
@@ -51,7 +50,8 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 }
 
 // ============================================================
-// Middleware/JwtMiddleware.cs — ตรวจสอบ JWT Token
+// Middleware/JwtMiddleware.cs — JWT token validation
+// Supports both Authorization header and cookie-based tokens.
 // ============================================================
 public class JwtMiddleware(RequestDelegate next, IConfiguration config, ILogger<JwtMiddleware> logger)
 {
@@ -64,6 +64,7 @@ public class JwtMiddleware(RequestDelegate next, IConfiguration config, ILogger<
         await next(ctx);
     }
 
+    /// <summary>Extracts the JWT token from the Authorization header or auth_token cookie.</summary>
     private static string? ExtractToken(HttpContext ctx)
     {
         var header = ctx.Request.Headers.Authorization.FirstOrDefault();
@@ -73,6 +74,7 @@ public class JwtMiddleware(RequestDelegate next, IConfiguration config, ILogger<
         return ctx.Request.Cookies["auth_token"];
     }
 
+    /// <summary>Validates the token and attaches the ClaimsPrincipal to the request context.</summary>
     private void AttachUser(HttpContext ctx, string token)
     {
         try

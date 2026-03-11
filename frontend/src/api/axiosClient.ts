@@ -8,7 +8,7 @@ export const axiosClient = axios.create({
   timeout: 15_000,
 });
 
-// ── Request: แนบ JWT token อัตโนมัติ ─────────────────────────────────────────
+// --- Request Interceptor: attach JWT token automatically ---
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('csnews_token');
@@ -18,17 +18,17 @@ axiosClient.interceptors.request.use(
   (err) => Promise.reject(err),
 );
 
-// ── Response: แปลง error ให้เป็น Error object ────────────────────────────────
+// --- Response Interceptor: normalize errors ---
 axiosClient.interceptors.response.use(
   (res) => res,
   (err: AxiosError<{ message?: string }>) => {
     const status  = err.response?.status;
-    const message = err.response?.data?.message ?? err.message ?? 'เกิดข้อผิดพลาด';
+    const message = err.response?.data?.message ?? err.message ?? 'Something went wrong';
 
+    // Token expired — clear credentials and notify the app
     if (status === 401) {
       localStorage.removeItem('csnews_token');
       localStorage.removeItem('csnews_user');
-      // Dispatch custom event แทน hard redirect เพื่อให้ React จัดการ
       window.dispatchEvent(new CustomEvent('auth:expired'));
     }
 

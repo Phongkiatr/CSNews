@@ -1,16 +1,13 @@
 // ============================================================
-// Services/AuthService.cs — Business Logic ของ Authentication
+// Services/AuthService.cs — Authentication business logic
 //
-// Service Layer = ชั้นที่เก็บ Logic ทั้งหมด
-// Controller รับ Request → เรียก Service → Service คืนผล
-//
-// AuthService รับผิดชอบ:
-//   Register : ตรวจ duplicate → Hash password → บันทึก → ออก JWT
-//   Login    : หา User → ตรวจ password → ออก JWT
+// Responsibilities:
+//   Register    : check duplicates → hash password → save → issue JWT
+//   Login       : find user → verify password → issue JWT
+//   Impersonate : Admin can login as another user
 // ============================================================
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-
 using System.Text;
 using CSNews.Data;
 using CSNews.Models.DTOs;
@@ -24,7 +21,7 @@ public interface IAuthService
 {
     Task<AuthResponse> RegisterAsync(RegisterRequest req);
     Task<AuthResponse> LoginAsync(LoginRequest req);
-    Task<AuthResponse> ImpersonateAsync(int targetUserId); // Admin เข้าสู่ระบบเป็นผู้ใช้อื่น
+    Task<AuthResponse> ImpersonateAsync(int targetUserId);
 }
 
 public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
@@ -34,10 +31,10 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
         var email = req.Email.ToLower().Trim();
 
         if (await db.Users.AnyAsync(u => u.Email == email))
-            throw new InvalidOperationException("อีเมลนี้ถูกใช้งานแล้ว");
+            throw new InvalidOperationException("This email is already in use");
 
         if (await db.Users.AnyAsync(u => u.Username == req.Username))
-            throw new InvalidOperationException("ชื่อผู้ใช้นี้ถูกใช้งานแล้ว");
+            throw new InvalidOperationException("This username is already taken");
 
         var user = new User
         {
@@ -56,30 +53,30 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
     {
         var email = req.Email.ToLower().Trim();
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email)
-            ?? throw new KeyNotFoundException("ไม่พบบัญชีผู้ใช้นี้");
+            ?? throw new KeyNotFoundException("Account not found");
 
         if (!user.IsActive)
-            throw new UnauthorizedAccessException("บัญชีนี้ถูกระงับการใช้งาน");
+            throw new UnauthorizedAccessException("This account has been suspended");
 
         if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
-            throw new UnauthorizedAccessException("รหัสผ่านไม่ถูกต้อง");
+            throw new UnauthorizedAccessException("Invalid password");
 
         return Build(user);
     }
 
-    // ── Impersonate ──────────────────────────────────────────
+    // --- Impersonate: Admin logs in as another user ---
     public async Task<AuthResponse> ImpersonateAsync(int targetUserId)
     {
         var user = await db.Users.FindAsync(targetUserId)
-            ?? throw new KeyNotFoundException("ไม่พบผู้ใช้");
+            ?? throw new KeyNotFoundException("User not found");
 
         if (!user.IsActive)
-            throw new InvalidOperationException("บัญชีนี้ถูกระงับ");
+            throw new InvalidOperationException("This account has been suspended");
 
         return Build(user);
     }
 
-    // ── Private ─────────────────────────────────────────────
+    // --- Private helpers ---
     private AuthResponse Build(User user) =>
         new(GenerateJwt(user), ToDto(user));
 
@@ -88,7 +85,7 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Claims ฝังข้อมูลผู้ใช้ใน Token อ่านได้แต่แก้ไขไม่ได้
+        // Claims embed user info in the token (readable but tamper-proof)
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -108,8 +105,6 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-
 
     private static UserResponse ToDto(User u) =>
         new(u.Id, u.Username, u.Email, u.Role, u.ProfileImage, u.IsActive);

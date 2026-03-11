@@ -12,13 +12,13 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { ContactPage } from './pages/ContactPage';
 import { Link } from 'react-router-dom';
 
-// Guard: ต้อง Login ก่อน
+/** Auth guard: redirects to /login if the user is not authenticated. */
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-// Guard: ต้องเป็น Admin
+/** Admin guard: redirects to /login or /unauthorized based on auth state. */
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
   if (!user) return <Navigate to="/login" replace />;
@@ -26,6 +26,10 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Shared layout shell with Navbar + Footer.
+ * When `fullscreen` is true (e.g. admin dashboard), renders children without the shell.
+ */
 function Layout({ children, fullscreen = false }: { children: React.ReactNode; fullscreen?: boolean }) {
   const { user, logout } = useAuthStore();
   if (fullscreen) return <>{children}</>;
@@ -64,7 +68,7 @@ function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-        {/* Protected: ต้อง Login */}
+        {/* Protected: requires login */}
         <Route path="/create" element={
           <RequireAuth><CreateArticlePage /></RequireAuth>
         } />

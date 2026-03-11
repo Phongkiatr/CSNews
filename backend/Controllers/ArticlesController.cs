@@ -16,7 +16,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
 {
     // GET /api/articles
     // GET /api/articles?page=2&pageSize=9&categoryId=1&search=ai
-    // สาธารณะ — ทุกคนดูได้ เฉพาะ Published
+    // Public — only published articles
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll(
@@ -31,7 +31,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
 
     // GET /api/articles/admin
     // GET /api/articles/admin?status=Draft&page=1
-    // เฉพาะ Editor และ Admin — เห็นทุกสถานะ
+    // Editor/Admin only — all statuses visible
     [HttpGet("admin")]
     [Authorize(Roles = "Editor,Admin")]
     public async Task<IActionResult> GetAllAdmin(
@@ -44,7 +44,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     }
 
     // GET /api/articles/mine
-    // ดูบทความของตัวเอง ทุกสถานะ
+    // Current user's own articles (all statuses)
     [HttpGet("mine")]
     [Authorize(Roles = "Editor,Admin")]
     public async Task<IActionResult> GetMine(
@@ -58,8 +58,8 @@ public class ArticlesController(IArticleService articles) : ControllerBase
     }
 
     // GET /api/articles/{slug}
-    // เช่น GET /api/articles/ai-news-2025
-    // สาธารณะ — ถ้า Login จะเห็น Draft ของตัวเองด้วย
+    // e.g. GET /api/articles/ai-news-2025
+    // Public — authenticated users can also see their own drafts
     [HttpGet("{slug}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetBySlug(string slug)
@@ -74,7 +74,7 @@ public class ArticlesController(IArticleService articles) : ControllerBase
 
     // POST /api/articles
     // Body: { "title": "...", "summary": "...", "content": "...", "categoryId": 1 }
-    // เฉพาะ Editor และ Admin
+    // Editor/Admin only
     [HttpPost]
     [Authorize(Roles = "Editor,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateArticleRequest req)
@@ -82,14 +82,14 @@ public class ArticlesController(IArticleService articles) : ControllerBase
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await articles.CreateAsync(req, userId);
 
-        // 201 Created พร้อม Location header
+        // 201 Created with Location header
         return CreatedAtAction(nameof(GetBySlug), new { slug = result.Slug },
-            new ApiResponse<ArticleDetailResponse>(true, result, "สร้างบทความสำเร็จ"));
+            new ApiResponse<ArticleDetailResponse>(true, result, "Article created successfully"));
     }
 
     // PUT /api/articles/{id}
-    // Body: UpdateArticleRequest — แก้ไขทุก field
-    // เจ้าของบทความหรือ Admin เท่านั้น (ตรวจใน Service)
+    // Body: UpdateArticleRequest — update all fields
+    // Article owner or Admin only (checked in service layer)
     [HttpPut("{id:int}")]
     [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateArticleRequest req)
@@ -97,11 +97,11 @@ public class ArticlesController(IArticleService articles) : ControllerBase
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var role   = User.FindFirstValue(ClaimTypes.Role)!;
         var result = await articles.UpdateAsync(id, req, userId, role);
-        return Ok(new ApiResponse<ArticleDetailResponse>(true, result, "แก้ไขบทความสำเร็จ"));
+        return Ok(new ApiResponse<ArticleDetailResponse>(true, result, "Article updated successfully"));
     }
 
     // DELETE /api/articles/{id}
-    // เจ้าของบทความหรือ Admin เท่านั้น
+    // Article owner or Admin only
     [HttpDelete("{id:int}")]
     [Authorize]
     public async Task<IActionResult> Delete(int id)
@@ -109,16 +109,16 @@ public class ArticlesController(IArticleService articles) : ControllerBase
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var role   = User.FindFirstValue(ClaimTypes.Role)!;
         await articles.DeleteAsync(id, userId, role);
-        return Ok(new ApiResponse<string>(true, "ลบบทความสำเร็จ"));
+        return Ok(new ApiResponse<string>(true, "Article deleted successfully"));
     }
 
     // PATCH /api/articles/{id}/publish
-    // เปลี่ยนสถานะจาก Draft → Published
+    // Change status from Draft → Published
     [HttpPatch("{id:int}/publish")]
     [Authorize(Roles = "Editor,Admin")]
     public async Task<IActionResult> Publish(int id)
     {
         await articles.PublishAsync(id);
-        return Ok(new ApiResponse<string>(true, "เผยแพร่บทความสำเร็จ"));
+        return Ok(new ApiResponse<string>(true, "Article published successfully"));
     }
 }

@@ -23,7 +23,7 @@ const EMPTY: FormState = {
 export function CreateArticlePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const editSlug = searchParams.get('edit'); // ?edit=slug = โหมดแก้ไข
+  const editSlug = searchParams.get('edit'); // ?edit=slug → edit mode
   const { user } = useAuthStore();
 
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -40,10 +40,10 @@ export function CreateArticlePage() {
 
   const initialLoadDone = useRef(false);
 
-  // โหลด categories
+  // Load categories on mount
   useEffect(() => { categoryApi.getAll().then(setCategories).catch(console.error); }, []);
 
-  // ถ้าเป็นโหมดแก้ไข — โหลดข้อมูลเดิม | ถ้าโหมดสร้างใหม่ — โหลดจาก Auto-save
+  // Edit mode → load existing article | Create mode → restore auto-saved draft
   useEffect(() => {
     const loadData = async () => {
       if (editSlug) {
@@ -74,13 +74,13 @@ export function CreateArticlePage() {
           initialLoadDone.current = true;
         }
       } else {
-        // โหมดสร้างใหม่ — ตรวจสอบ Auto-save
+        // Create mode — check for auto-saved draft
         const saved = localStorage.getItem(AUTOSAVE_KEY);
         if (saved) {
           try {
             setForm(JSON.parse(saved));
             setLastSaved(new Date());
-          } catch { /* ignore */ }
+          } catch { /* ignore corrupt data */ }
         }
         initialLoadDone.current = true;
       }
@@ -88,7 +88,7 @@ export function CreateArticlePage() {
     loadData();
   }, [editSlug]);
 
-  // Auto-save Logic (เฉพาะโหมดสร้างใหม่)
+  // Auto-save draft every 2s (create mode only)
   useEffect(() => {
     if (editId || !initialLoadDone.current) return;
 
@@ -119,12 +119,13 @@ export function CreateArticlePage() {
   const handleSubmit = async (e: React.FormEvent, publish = false) => {
     e.preventDefault();
     if (!form.categoryId) { setError('กรุณาเลือกหมวดหมู่'); return; }
-    setSaving(true); setError('');
+    setSaving(true);
+    setError('');
 
     try {
       const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
 
-      // อัปโหลดรูปปกใหม่ถ้ามีการเปลี่ยน
+      // Upload new thumbnail if changed
       let thumbnailUrl = form.thumbnailUrl || undefined;
       if (thumbFile) {
         const uploaded = await uploadApi.uploadImage(thumbFile);
@@ -134,7 +135,7 @@ export function CreateArticlePage() {
       let slug = '';
 
       if (editId) {
-        // โหมดแก้ไข — update บทความเดิม
+        // Edit mode — update existing article
         const updated = await articleApi.update(editId, {
           title: form.title,
           summary: form.summary,
@@ -147,7 +148,7 @@ export function CreateArticlePage() {
         });
         slug = updated.slug;
       } else {
-        // โหมดสร้างใหม่
+        // Create mode — save new article
         const article = await articleApi.create({
           title: form.title,
           summary: form.summary,
@@ -157,7 +158,7 @@ export function CreateArticlePage() {
           isFeatured: form.isFeatured,
         });
 
-        // update thumbnailUrl ถ้ามีรูป
+        // Attach thumbnail if provided
         if (thumbnailUrl) {
           await articleApi.update(article.id, {
             title: form.title,
@@ -171,16 +172,16 @@ export function CreateArticlePage() {
           });
         }
 
-        // แนบไฟล์
+        // Upload attachments
         for (const file of attachments)
           await uploadApi.uploadArticleFile(file, article.id);
 
-        // เผยแพร่
+        // Publish immediately if requested
         if (publish) await articleApi.publish(article.id);
 
         slug = article.slug;
-        
-        // ล้าง Auto-save เมื่อสำเร็จ
+
+        // Clear auto-saved draft on success
         localStorage.removeItem(AUTOSAVE_KEY);
       }
 
@@ -196,6 +197,7 @@ export function CreateArticlePage() {
     </div>
   );
 
+  // Success screen
   if (savedSlug) return (
     <div className="max-w-2xl mx-auto px-6 py-20 text-center" style={{ fontFamily: "'DM Sans',sans-serif" }}>
       <div className="text-6xl mb-4 text-emerald-500">
@@ -273,6 +275,7 @@ export function CreateArticlePage() {
           </Field>
         </div>
 
+        {/* Rich text editor */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">เนื้อหา *</label>
           <div className="border border-slate-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-amber-400">
@@ -297,7 +300,7 @@ export function CreateArticlePage() {
           </div>
         </div>
 
-        {/* Thumbnail */}
+        {/* Thumbnail upload */}
         <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-6">
           <p className="text-sm font-semibold text-slate-700 mb-3">รูปหน้าปก</p>
           <input type="file" accept="image/*" onChange={handleThumb} className="hidden" id="thumb" />
@@ -320,7 +323,7 @@ export function CreateArticlePage() {
           )}
         </div>
 
-        {/* Attachments (เฉพาะโหมดสร้างใหม่) */}
+        {/* Attachments (create mode only) */}
         {!editId && (
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
             <p className="text-sm font-semibold text-slate-700 mb-3">ไฟล์แนบ</p>
@@ -346,7 +349,7 @@ export function CreateArticlePage() {
           </div>
         )}
 
-        {/* Featured */}
+        {/* Featured toggle */}
         <label className="flex items-center gap-3 cursor-pointer">
           <div className={`relative w-11 h-6 rounded-full transition-colors ${form.isFeatured ? 'bg-amber-500' : 'bg-slate-200'}`}>
             <input type="checkbox" name="isFeatured" checked={form.isFeatured} onChange={handleChange} className="sr-only" />
@@ -358,7 +361,7 @@ export function CreateArticlePage() {
           </span>
         </label>
 
-        {/* Actions */}
+        {/* Submit actions */}
         <div className="flex gap-3 pt-4 border-t border-slate-200">
           <button type="submit" disabled={saving}
             className="flex-1 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors flex items-center justify-center gap-2">

@@ -18,16 +18,19 @@ export interface AuthStore {
   isAdmin: boolean;
 }
 
+/** Maps each role to a numeric level for role-based comparisons. */
 const ROLE_LEVEL: Record<UserRole, number> = { Reader: 0, Editor: 1, Admin: 2 };
 
 export const AuthContext = createContext<AuthStore | null>(null);
 
+/** Consumes the AuthContext. Must be used within an AuthProvider. */
 export function useAuthStore(): AuthStore {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuthStore must be used inside AuthProvider');
   return ctx;
 }
 
+/** Provides the actual auth state & actions. Used once in the root component. */
 export function useAuthState(): AuthStore {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
   const [user,  setUser]  = useState<User | null>(() => {
@@ -36,12 +39,14 @@ export function useAuthState(): AuthStore {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Listen for token-expired events dispatched by the axios interceptor
   useEffect(() => {
     const handler = () => logout();
     window.addEventListener('auth:expired', handler);
     return () => window.removeEventListener('auth:expired', handler);
   }, []);
 
+  /** Saves credentials to localStorage and updates React state. */
   const persist = (tok: string, u: User) => {
     localStorage.setItem(TOKEN_KEY, tok);
     localStorage.setItem(USER_KEY, JSON.stringify(u));
@@ -72,6 +77,7 @@ export function useAuthState(): AuthStore {
     setUser(null);
   }, []);
 
+  /** Returns true if the current user's role is at least `minRole`. */
   const hasRole = useCallback((minRole: UserRole) => {
     if (!user) return false;
     return ROLE_LEVEL[user.role] >= ROLE_LEVEL[minRole];

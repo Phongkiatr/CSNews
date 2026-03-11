@@ -1,3 +1,7 @@
+/**
+ * Application entry point.
+ * Wraps the app with AuthContext so every component can access auth state.
+ */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';

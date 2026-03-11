@@ -1,4 +1,3 @@
-// ใส่ using ทั้งหมดไว้บนสุดก่อนเสมอ
 using CSNews.Models.DTOs;
 using CSNews.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 // ============================================================
 // Controllers/CategoriesController.cs
+// Route: /api/categories
 // ============================================================
 namespace CSNews.Controllers;
 
@@ -21,36 +21,37 @@ public class CategoriesController(ICategoryService categories) : ControllerBase
         return Ok(new ApiResponse<IEnumerable<CategoryResponse>>(true, result));
     }
 
-    // POST /api/categories
+    // POST /api/categories — Admin only
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
     {
         var result = await categories.CreateAsync(request);
-        return Ok(new ApiResponse<CategoryResponse>(true, result, "สร้างหมวดหมู่สำเร็จ"));
+        return Ok(new ApiResponse<CategoryResponse>(true, result, "Category created successfully"));
     }
 
-    // PUT /api/categories/{id}
+    // PUT /api/categories/{id} — Admin only
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request)
     {
         var result = await categories.UpdateAsync(id, request);
-        return Ok(new ApiResponse<CategoryResponse>(true, result, "แก้ไขหมวดหมู่สำเร็จ"));
+        return Ok(new ApiResponse<CategoryResponse>(true, result, "Category updated successfully"));
     }
 
-    // DELETE /api/categories/{id}
+    // DELETE /api/categories/{id} — Admin only
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         await categories.DeleteAsync(id);
-        return Ok(new ApiResponse<string>(true, "ลบหมวดหมู่สำเร็จ"));
+        return Ok(new ApiResponse<string>(true, "Category deleted successfully"));
     }
 }
 
 // ============================================================
 // Controllers/UploadController.cs
+// Route: /api/upload
 // ============================================================
 [ApiController]
 [Route("api/[controller]")]
@@ -85,12 +86,12 @@ public class UploadController(IFileService files) : ControllerBase
         return Ok(new ApiResponse<List<UploadResponse>>(true, results));
     }
 
-    // DELETE /api/upload?filePath=/uploads/images/xxx.jpg
+    // DELETE /api/upload?filePath=/uploads/images/xxx.jpg — Admin only
     [HttpDelete]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromQuery] string filePath)
     {
         await files.DeleteAsync(filePath);
-        return Ok(new ApiResponse<string>(true, "ลบไฟล์สำเร็จ"));
+        return Ok(new ApiResponse<string>(true, "File deleted successfully"));
     }
 }

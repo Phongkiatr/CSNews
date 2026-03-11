@@ -37,7 +37,7 @@ export function MyArticlesPage() {
       setArticles(res.items);
       setTotalPages(res.totalPages);
 
-      // โหลด stats
+      // Fetch stats (total / published / draft counts)
       const [all, pub, dft] = await Promise.all([
         articleApi.getMine({ page: 1, pageSize: 1 }),
         articleApi.getMine({ page: 1, pageSize: 1, status: 'Published' }),
@@ -51,7 +51,8 @@ export function MyArticlesPage() {
   useEffect(() => { load(); }, [page, filter]);
 
   const notify = (text: string, type: 'ok' | 'err' = 'ok') => {
-    setMsg(text); setMsgType(type);
+    setMsg(text);
+    setMsgType(type);
     setTimeout(() => setMsg(''), 3000);
   };
 
@@ -87,7 +88,7 @@ export function MyArticlesPage() {
         </Link>
       </div>
 
-      {/* Notification */}
+      {/* Toast notification */}
       {msg && (
         <div className={`text-sm px-4 py-3 rounded-xl mb-6 border ${
           msgType === 'ok'
@@ -97,7 +98,7 @@ export function MyArticlesPage() {
         </div>
       )}
 
-      {/* Stats */}
+      {/* Stats cards */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
           { label: 'ทั้งหมด',      value: stats.total,     icon: 'la-newspaper', cls: 'bg-sky-50 border-sky-200 text-sky-700' },
@@ -164,7 +165,7 @@ export function MyArticlesPage() {
                 )}
               </div>
 
-              {/* Info */}
+              {/* Article info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${STATUS_BADGE[a.status] ?? ''}`}>

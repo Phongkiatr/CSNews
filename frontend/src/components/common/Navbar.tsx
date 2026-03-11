@@ -18,7 +18,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // ปิด dropdown เมื่อคลิกข้างนอก
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node))
@@ -65,7 +65,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
         <div className="flex items-center gap-3" style={{ fontFamily: "'DM Sans',sans-serif" }}>
           {user ? (
             <>
-              {/* + เขียนข่าว */}
+              {/* Write article button (Editor/Admin only) */}
               {['Editor', 'Admin'].includes(user.role) && (
                 <Link to="/create"
                   className="text-xs bg-amber-500 text-slate-950 font-bold px-3 py-1.5 rounded hover:bg-amber-400 transition-colors">
@@ -77,14 +77,12 @@ export function Navbar({ user, onLogout }: NavbarProps) {
               <div className="relative" ref={ref}>
                 <button onClick={() => setOpen(p => !p)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors">
-                  {/* ชื่อ + Role */}
                   <div className="hidden sm:flex items-center gap-2">
                     <span className="text-sm text-slate-300">{user.username}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_BADGE[user.role] ?? ''}`}>
                       {user.role}
                     </span>
                   </div>
-                  {/* Arrow */}
                   <span className={`text-slate-400 text-xs transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
                     ▾
                   </span>

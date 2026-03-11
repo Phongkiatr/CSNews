@@ -1,4 +1,3 @@
-// ใส่ using ทั้งหมดไว้บนสุดก่อนเสมอ
 using CSNews.Data;
 using CSNews.Models.DTOs;
 using CSNews.Models.Entities;
@@ -25,18 +24,18 @@ public class CategoryService(AppDbContext db) : ICategoryService
     {
         var q = db.Categories.AsQueryable();
         if (activeOnly) q = q.Where(c => c.IsActive);
-        
+
         var cats = await q.Select(c => new CategoryResponse(
             c.Id, c.Name, c.Slug, c.Description, c.IsActive, c.Articles.Count
         )).ToListAsync();
-        
+
         return cats;
     }
 
     public async Task<CategoryResponse> CreateAsync(CreateCategoryRequest req)
     {
         if (await db.Categories.AnyAsync(c => c.Name == req.Name))
-            throw new Exception("มีหมวดหมู่นี้อยู่แล้ว");
+            throw new Exception("Category already exists");
 
         var cat = new Category
         {
@@ -54,10 +53,10 @@ public class CategoryService(AppDbContext db) : ICategoryService
 
     public async Task<CategoryResponse> UpdateAsync(int id, UpdateCategoryRequest req)
     {
-        var cat = await db.Categories.FindAsync(id) ?? throw new Exception("ไม่พบหมวดหมู่");
+        var cat = await db.Categories.FindAsync(id) ?? throw new Exception("Category not found");
 
         if (req.Name != cat.Name && await db.Categories.AnyAsync(c => c.Name == req.Name))
-            throw new Exception("ชื่อหมวดหมู่นี้ถูกใช้ไปแล้ว");
+            throw new Exception("Category name is already in use");
 
         cat.Name = req.Name;
         cat.Slug = req.Name.ToLower().Replace(" ", "-");
@@ -71,14 +70,14 @@ public class CategoryService(AppDbContext db) : ICategoryService
 
     public async Task DeleteAsync(int id)
     {
-        var cat = await db.Categories.FindAsync(id) ?? throw new Exception("ไม่พบหมวดหมู่");
+        var cat = await db.Categories.FindAsync(id) ?? throw new Exception("Category not found");
         db.Categories.Remove(cat);
         await db.SaveChangesAsync();
     }
 }
 
 // ============================================================
-// Services/FileService.cs
+// Services/FileService.cs — Cloudinary file upload/delete
 // ============================================================
 public interface IFileService
 {
@@ -92,8 +91,9 @@ public class FileService : IFileService
     private readonly AppDbContext _db;
     private readonly ILogger<FileService> _logger;
     private readonly Cloudinary _cloudinary;
-    private const long MaxBytes = 10 * 1024 * 1024;
+    private const long MaxBytes = 10 * 1024 * 1024; // 10 MB
 
+    /// <summary>Allowed MIME types per upload folder.</summary>
     private static readonly Dictionary<string, string[]> Allowed = new()
     {
         ["images"]   = ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -107,20 +107,20 @@ public class FileService : IFileService
     {
         _db = db;
         _logger = logger;
-        
+
         var url = config["CloudinaryUrl"];
-        if (string.IsNullOrEmpty(url)) 
+        if (string.IsNullOrEmpty(url))
             throw new Exception("CloudinaryUrl is missing in appsettings.json. Please set it to enable file uploads.");
-            
+
         _cloudinary = new Cloudinary(url);
     }
 
     public async Task<UploadResponse> UploadAsync(IFormFile file, string folder = "general")
     {
-        if (file.Length == 0)       throw new ArgumentException("ไฟล์ว่างเปล่า");
-        if (file.Length > MaxBytes) throw new ArgumentException("ไฟล์ใหญ่เกิน 10MB");
+        if (file.Length == 0)       throw new ArgumentException("File is empty");
+        if (file.Length > MaxBytes) throw new ArgumentException("File exceeds 10 MB limit");
         if (Allowed.TryGetValue(folder, out var types) && !types.Contains(file.ContentType))
-            throw new ArgumentException($"ไม่อนุญาตประเภทไฟล์ {file.ContentType}");
+            throw new ArgumentException($"File type {file.ContentType} is not allowed");
 
         var fileType = GetFileType(file.ContentType);
         var uploadParams = new RawUploadParams
@@ -130,7 +130,7 @@ public class FileService : IFileService
         };
 
         var result = await _cloudinary.UploadAsync(uploadParams);
-        
+
         if (result.Error != null)
             throw new Exception($"Cloudinary Upload Error: {result.Error.Message}");
 
@@ -144,9 +144,9 @@ public class FileService : IFileService
         var result = await UploadAsync(file, "articles");
         _db.ArticleFiles.Add(new ArticleFile
         {
-            FileName         = result.FileName, // Storing PublicId here
+            FileName         = result.FileName,     // Stores Cloudinary PublicId
             OriginalFileName = file.FileName,
-            FilePath         = result.FilePath, // Storing SecureUrl here
+            FilePath         = result.FilePath,      // Stores Cloudinary SecureUrl
             FileType         = result.FileType,
             FileSize         = result.FileSize,
             ArticleId        = articleId
@@ -157,19 +157,16 @@ public class FileService : IFileService
 
     public async Task DeleteAsync(string filePath)
     {
-        // For Cloudinary, filePath is the PublicId (which we stored in FileName in the DB, 
-        // or we need to extract from URL if it's an old local path)
         var publicId = filePath;
 
-        // If it looks like a URL, extract the public ID
+        // If the path looks like a Cloudinary URL, extract the public ID
         if (filePath.Contains("cloudinary.com"))
         {
             var uri = new Uri(filePath);
             var segments = uri.Segments;
             var lastSegment = segments.Last();
             var nameWithoutExt = Path.GetFileNameWithoutExtension(lastSegment);
-            // CSNews uses a specific folder structure "csnews/..."
-            try 
+            try
             {
                var folderPath = string.Join("", segments.Skip(Array.IndexOf(segments, "csnews/") + 1).Take(segments.Length - Array.IndexOf(segments, "csnews/") - 2));
                publicId = $"csnews/{folderPath}{nameWithoutExt}";
@@ -181,8 +178,8 @@ public class FileService : IFileService
         }
         else if (filePath.StartsWith("/uploads"))
         {
-            // Do not attempt to delete local files via Cloudinary
-            return; 
+            // Legacy local file path — skip Cloudinary deletion
+            return;
         }
 
         var deletionParams = new DeletionParams(publicId);
@@ -190,6 +187,7 @@ public class FileService : IFileService
         _logger.LogInformation("Deleted from Cloudinary: {PublicId}", publicId);
     }
 
+    /// <summary>Maps a MIME content type to a simplified file type category.</summary>
     private static string GetFileType(string ct) => ct switch
     {
         var t when t.StartsWith("image/") => "image",

@@ -91,7 +91,7 @@ export function RegisterPage() {
   );
 }
 
-// ── Shared components ────────────────────────────────────────
+// --- Shared UI components ---
 const inputCls = "w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all";
 const btnCls = "w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 disabled:opacity-60 transition-colors";
 

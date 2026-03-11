@@ -1,14 +1,14 @@
 // ============================================================
-// Services/ArticleService.cs — Business Logic ของบทความ
+// Services/ArticleService.cs — Article business logic
 //
-// รับผิดชอบ CRUD ของบทความทั้งหมด:
-//   GetPublished  : ดูข่าว Published (สำหรับทุกคน)
-//   GetAll        : ดูทุกสถานะ (Editor/Admin)
-//   GetBySlug     : ดูบทความ + เพิ่ม ViewCount
-//   Create        : สร้างบทความ + สร้าง Tag อัตโนมัติ
-//   Update        : แก้ไข (Owner หรือ Admin เท่านั้น)
-//   Delete        : ลบ (Owner หรือ Admin เท่านั้น)
-//   Publish       : เปลี่ยนสถานะเป็น Published
+// Responsibilities:
+//   GetPublished : public articles (Published only)
+//   GetAll       : all statuses (Editor/Admin)
+//   GetBySlug    : article detail + increment view count
+//   Create       : create article + auto-create tags
+//   Update       : edit (owner or Admin only)
+//   Delete       : remove (owner or Admin only)
+//   Publish      : change status to Published
 // ============================================================
 using CSNews.Data;
 using CSNews.Models.DTOs;
@@ -32,7 +32,7 @@ public interface IArticleService
 
 public class ArticleService(AppDbContext db) : IArticleService
 {
-    // ── Public: เฉพาะ Published ──────────────────────────────
+    // --- Public: Published articles only ---
     public async Task<PagedResponse<ArticleListResponse>> GetPublishedAsync(
         int page, int pageSize, int? categoryId, string? search)
     {
@@ -51,7 +51,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         return await ToPagedAsync(q.OrderByDescending(a => a.PublishedAt), page, pageSize);
     }
 
-    // ── Admin: ดูทุกสถานะ ────────────────────────────────────
+    // --- Admin: all statuses ---
     public async Task<PagedResponse<ArticleListResponse>> GetAllAsync(
         int page, int pageSize, string? status)
     {
@@ -67,7 +67,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         return await ToPagedAsync(q.OrderByDescending(a => a.CreatedAt), page, pageSize);
     }
 
-    // ── Detail + เพิ่ม ViewCount ─────────────────────────────
+    // --- Detail + increment view count ---
     public async Task<ArticleDetailResponse> GetBySlugAsync(string slug, bool isAuthenticated, int? userId = null)
     {
         var q = db.Articles
@@ -77,14 +77,14 @@ public class ArticleService(AppDbContext db) : IArticleService
             .Include(a => a.Files)
             .Where(a => a.Slug == slug);
 
-        // ถ้าไม่ได้ Login ดูได้เฉพาะ Published
+        // Unauthenticated users can only see Published articles
         if (!isAuthenticated)
             q = q.Where(a => a.Status == "Published");
 
         var article = await q.FirstOrDefaultAsync()
-            ?? throw new KeyNotFoundException("ไม่พบบทความ");
+            ?? throw new KeyNotFoundException("Article not found");
 
-        // นับ ViewCount เฉพาะเมื่อไม่ใช่เจ้าของบทความ
+        // Increment view count only if the viewer is not the author
         if (userId == null || userId != article.AuthorId)
         {
             article.ViewCount++;
@@ -102,15 +102,15 @@ public class ArticleService(AppDbContext db) : IArticleService
             .Include(a => a.ArticleTags).ThenInclude(at => at.Tag)
             .Include(a => a.Files)
             .FirstOrDefaultAsync(a => a.Id == id)
-            ?? throw new KeyNotFoundException("ไม่พบบทความ");
+            ?? throw new KeyNotFoundException("Article not found");
 
         return ToDetailDto(article);
     }
 
-    // ── Create ───────────────────────────────────────────────
+    // --- Create ---
     public async Task<ArticleDetailResponse> CreateAsync(CreateArticleRequest req, int authorId)
     {
-        // สร้าง slug จาก title
+        // Generate URL slug from title
         var slug = MakeSlug(req.Title);
         if (await db.Articles.AnyAsync(a => a.Slug == slug))
             slug = $"{slug}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
@@ -127,7 +127,7 @@ public class ArticleService(AppDbContext db) : IArticleService
             Status     = "Draft"
         };
 
-        // สร้าง Tag อัตโนมัติถ้ายังไม่มี
+        // Auto-create tags that don't exist yet
         if (req.Tags?.Any() == true)
         {
             foreach (var tagName in req.Tags.Where(t => !string.IsNullOrWhiteSpace(t)))
@@ -145,18 +145,18 @@ public class ArticleService(AppDbContext db) : IArticleService
         return await GetByIdAsync(article.Id);
     }
 
-    // ── Update ───────────────────────────────────────────────
+    // --- Update ---
     public async Task<ArticleDetailResponse> UpdateAsync(
         int id, UpdateArticleRequest req, int userId, string role)
     {
         var article = await db.Articles
             .Include(a => a.ArticleTags)
             .FirstOrDefaultAsync(a => a.Id == id)
-            ?? throw new KeyNotFoundException("ไม่พบบทความ");
+            ?? throw new KeyNotFoundException("Article not found");
 
-        // เฉพาะเจ้าของหรือ Admin เท่านั้น
+        // Only the owner or Admin can edit
         if (role != "Admin" && article.AuthorId != userId)
-            throw new UnauthorizedAccessException("ไม่มีสิทธิ์แก้ไขบทความนี้");
+            throw new UnauthorizedAccessException("Not authorized to edit this article");
 
         article.Title      = req.Title;
         article.Summary    = req.Summary;
@@ -172,7 +172,7 @@ public class ArticleService(AppDbContext db) : IArticleService
             article.PublishedAt = DateTime.UtcNow;
         article.Status = req.Status;
 
-        // อัปเดต Tags
+        // Replace tags
         db.ArticleTags.RemoveRange(article.ArticleTags);
         if (req.Tags?.Any() == true)
         {
@@ -189,31 +189,31 @@ public class ArticleService(AppDbContext db) : IArticleService
         return await GetByIdAsync(id);
     }
 
-    // ── Delete ───────────────────────────────────────────────
+    // --- Delete ---
     public async Task DeleteAsync(int id, int userId, string role)
     {
         var article = await db.Articles.FindAsync(id)
-            ?? throw new KeyNotFoundException("ไม่พบบทความ");
+            ?? throw new KeyNotFoundException("Article not found");
 
         if (role != "Admin" && article.AuthorId != userId)
-            throw new UnauthorizedAccessException("ไม่มีสิทธิ์ลบบทความนี้");
+            throw new UnauthorizedAccessException("Not authorized to delete this article");
 
         db.Articles.Remove(article);
         await db.SaveChangesAsync();
     }
 
-    // ── Publish ──────────────────────────────────────────────
+    // --- Publish ---
     public async Task PublishAsync(int id)
     {
         var article = await db.Articles.FindAsync(id)
-            ?? throw new KeyNotFoundException("ไม่พบบทความ");
+            ?? throw new KeyNotFoundException("Article not found");
 
         article.Status      = "Published";
         article.PublishedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
     }
 
-    // ── My Articles ─────────────────────────────────────────
+    // --- My Articles ---
     public async Task<PagedResponse<ArticleListResponse>> GetMyArticlesAsync(
         int userId, int page, int pageSize, string? status)
     {
@@ -229,7 +229,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         return await ToPagedAsync(q.OrderByDescending(a => a.CreatedAt), page, pageSize);
     }
 
-    // ── Private Helpers ──────────────────────────────────────
+    // --- Private helpers ---
     private static async Task<PagedResponse<ArticleListResponse>> ToPagedAsync(
         IQueryable<Article> q, int page, int pageSize)
     {
@@ -263,7 +263,7 @@ public class ArticleService(AppDbContext db) : IArticleService
         a.CreatedAt, a.PublishedAt
     );
 
-    // สร้าง slug จากข้อความ (รองรับภาษาไทย)
+    /// <summary>Generates a URL-friendly slug from text (supports Thai characters).</summary>
     private static string MakeSlug(string text) =>
         System.Text.RegularExpressions.Regex
             .Replace(text.ToLowerInvariant().Trim(), @"[^a-z0-9\u0E00-\u0E7F]+", "-")

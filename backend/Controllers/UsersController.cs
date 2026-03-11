@@ -1,7 +1,6 @@
 // ============================================================
 // Controllers/UsersController.cs
-// Route: /api/users
-// เฉพาะ Admin เท่านั้น
+// Route: /api/users — Admin only
 // ============================================================
 using System.Security.Claims;
 using CSNews.Models.DTOs;
@@ -30,7 +29,7 @@ public class UsersController(IUserService users, IAuthService auth) : Controller
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await users.ChangeRoleAsync(id, req.Role, myId);
-        return Ok(new ApiResponse<UserResponse>(true, result, $"เปลี่ยน Role เป็น {req.Role} สำเร็จ"));
+        return Ok(new ApiResponse<UserResponse>(true, result, $"Role changed to {req.Role} successfully"));
     }
 
     // PATCH /api/users/{id}/suspend
@@ -39,20 +38,19 @@ public class UsersController(IUserService users, IAuthService auth) : Controller
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await users.ToggleSuspendAsync(id, myId);
-        var msg = result.Role != null ? "สำเร็จ" : "สำเร็จ"; // simplified
-        return Ok(new ApiResponse<UserResponse>(true, result, "เปลี่ยนสถานะสำเร็จ"));
+        return Ok(new ApiResponse<UserResponse>(true, result, "Status changed successfully"));
     }
 
-    // POST /api/users/{id}/impersonate
+    // POST /api/users/{id}/impersonate — login as another user
     [HttpPost("{id:int}/impersonate")]
     public async Task<IActionResult> Impersonate(int id)
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         if (id == myId)
-            return BadRequest(new ApiResponse<string>(false, "", "ไม่สามารถ Impersonate ตัวเองได้"));
+            return BadRequest(new ApiResponse<string>(false, "", "Cannot impersonate yourself"));
 
         var result = await auth.ImpersonateAsync(id);
-        return Ok(new ApiResponse<AuthResponse>(true, result, "Impersonate สำเร็จ"));
+        return Ok(new ApiResponse<AuthResponse>(true, result, "Impersonation successful"));
     }
 
     // DELETE /api/users/{id}
@@ -61,6 +59,6 @@ public class UsersController(IUserService users, IAuthService auth) : Controller
     {
         var myId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         await users.DeleteAsync(id, myId);
-        return Ok(new ApiResponse<string>(true, "ลบผู้ใช้สำเร็จ"));
+        return Ok(new ApiResponse<string>(true, "User deleted successfully"));
     }
 }

@@ -5,7 +5,7 @@ import type { ArticleListItem, User } from '../../types';
 import { articleApi, usersApi } from '../../api';
 import { formatDate } from '../../utils/format';
 
-// ── Sidebar nav items ─────────────────────────────────────────
+// --- Sidebar navigation items ---
 const NAV = [
   { icon: 'la-chart-bar', label: 'Dashboard', tab: 'overview' },
   { icon: 'la-newspaper', label: 'บทความ', tab: 'articles' },
@@ -47,7 +47,7 @@ export function AdminDashboard() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── Load articles ────────────────────────────────────────────
+  // --- Load articles ---
   const loadArticles = useCallback(async () => {
     setLoading(true);
     try {
@@ -67,7 +67,7 @@ export function AdminDashboard() {
     finally { setLoading(false); }
   }, [artPage, artFilter]);
 
-  // ── Load users ───────────────────────────────────────────────
+  // --- Load users ---
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -87,7 +87,7 @@ export function AdminDashboard() {
   useEffect(() => { loadArticles(); }, [loadArticles]);
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
-  // ── Actions ──────────────────────────────────────────────────
+  // --- Article actions ---
   const handlePublish = async (id: number) => {
     try { await articleApi.publish(id); notify('เผยแพร่สำเร็จ ✓'); loadArticles(); }
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'Error', false); }
@@ -99,6 +99,7 @@ export function AdminDashboard() {
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'Error', false); }
   };
 
+  // --- User actions ---
   const handleChangeRole = async (userId: number, role: string) => {
     try {
       await usersApi.changeRole(userId, role);
@@ -120,7 +121,6 @@ export function AdminDashboard() {
     if (!confirm(`เข้าสู่ระบบเป็น "${u.username}"?`)) return;
     try {
       const res = await usersApi.impersonate(u.id);
-      // บันทึก token ใหม่แล้ว navigate
       localStorage.setItem('csnews_token', res.token);
       localStorage.setItem('csnews_user', JSON.stringify(res.user));
       window.location.href = '/';
@@ -133,11 +133,11 @@ export function AdminDashboard() {
     catch (e: unknown) { notify(e instanceof Error ? e.message : 'Error', false); }
   };
 
-  // ── Render ───────────────────────────────────────────────────
+  // --- Render ---
   return (
     <div className="flex min-h-screen bg-slate-950" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* ── Sidebar ─────────────────────────────────────────── */}
+      {/* Sidebar */}
       <aside className="w-60 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-800">
@@ -151,7 +151,7 @@ export function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Nav */}
+        {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           <p className="text-xs font-bold tracking-widest text-slate-600 px-3 pt-2 pb-1 uppercase">เมนู</p>
           {NAV.map(n => (
@@ -177,7 +177,7 @@ export function AdminDashboard() {
           </Link>
         </nav>
 
-        {/* User card */}
+        {/* Logged-in user card */}
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 px-2">
             <div className="w-9 h-9 rounded-full bg-amber-500 flex items-center justify-center text-slate-950 font-black text-sm flex-shrink-0">
@@ -191,10 +191,10 @@ export function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ── Main ────────────────────────────────────────────── */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Topbar */}
+        {/* Top bar */}
         <header className="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-6 h-14 flex items-center justify-between flex-shrink-0">
           <div>
             <h1 className="text-white font-bold text-base">
@@ -211,10 +211,10 @@ export function AdminDashboard() {
           </div>
         </header>
 
-        {/* Content */}
+        {/* Tab content */}
         <main className="flex-1 p-6 overflow-auto">
 
-          {/* ── Toast ─────────────────────────────────────── */}
+          {/* Toast notification */}
           {toast && (
             <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-xl border transition-all ${toast.ok
               ? 'bg-slate-900 border-emerald-500/40 text-emerald-400'
@@ -224,7 +224,7 @@ export function AdminDashboard() {
             </div>
           )}
 
-          {/* ══ OVERVIEW TAB ══════════════════════════════ */}
+          {/* ══ OVERVIEW TAB ══ */}
           {tab === 'overview' && (
             <div className="space-y-6">
               {/* Stats cards */}
@@ -307,7 +307,7 @@ export function AdminDashboard() {
             </div>
           )}
 
-          {/* ══ ARTICLES TAB ══════════════════════════════ */}
+          {/* ══ ARTICLES TAB ══ */}
           {tab === 'articles' && (
             <div className="space-y-5">
               {/* Mini stats */}
@@ -423,7 +423,7 @@ export function AdminDashboard() {
             </div>
           )}
 
-          {/* ══ USERS TAB ════════════════════════════════ */}
+          {/* ══ USERS TAB ══ */}
           {tab === 'users' && (
             <div className="space-y-5">
               {/* Stats */}
@@ -474,10 +474,9 @@ export function AdminDashboard() {
                               </div>
                             </td>
 
-                            {/* Email */}
                             <td className="px-5 py-3.5 text-slate-400 text-xs font-mono">{u.email}</td>
 
-                            {/* Role badge + click to change */}
+                            {/* Role badge — click to change */}
                             <td className="px-5 py-3.5">
                               <button onClick={() => setRoleModal(u)}
                                 className={`text-xs px-2.5 py-1 rounded-full font-medium border transition-all hover:brightness-125 ${ROLE_COLOR[u.role] ?? ''}`}>
@@ -495,18 +494,16 @@ export function AdminDashboard() {
                               </span>
                             </td>
 
-                            {/* Actions */}
+                            {/* Actions (visible on hover) */}
                             <td className="px-5 py-3.5">
                               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                {/* Impersonate */}
                                 {u.id !== user?.id && (
                                   <button onClick={() => handleImpersonate(u)}
-                                    title="เข้าสู่ระบบเป็น user นี้"
+                                    title="Login as this user"
                                     className="flex items-center gap-1.5 text-xs bg-violet-500/15 text-violet-400 border border-violet-500/30 px-3 py-1.5 rounded-lg hover:bg-violet-500/25 transition-colors font-medium">
                                     <span>⇄</span> Login as
                                   </button>
                                 )}
-                                {/* Suspend toggle */}
                                 {u.id !== user?.id && (
                                   <button onClick={() => handleSuspend(u)}
                                     className={`text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${u.isActive !== false
@@ -516,7 +513,6 @@ export function AdminDashboard() {
                                     {u.isActive !== false ? 'ระงับ' : 'คืนสิทธิ์'}
                                   </button>
                                 )}
-                                {/* Delete */}
                                 {u.id !== user?.id && (
                                   <button onClick={() => handleDeleteUser(u)}
                                     className="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1.5 rounded-lg hover:bg-red-500/20 transition-colors">
@@ -553,7 +549,7 @@ export function AdminDashboard() {
         </main>
       </div>
 
-      {/* ── Role Modal ─────────────────────────────────────────── */}
+      {/* Role change modal */}
       {roleModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setRoleModal(null)}>

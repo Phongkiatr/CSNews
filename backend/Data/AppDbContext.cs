@@ -1,10 +1,10 @@
 // ============================================================
-// Data/AppDbContext.cs — ประตูระหว่างโปรแกรมกับฐานข้อมูล
+// Data/AppDbContext.cs — Database gateway
 //
-// DbContext คือ Unit of Work — รวม Query ทั้งหมดและ
-// Commit ในครั้งเดียวด้วย SaveChangesAsync()
+// DbContext acts as a Unit of Work — collects all queries
+// and commits them in one batch via SaveChangesAsync().
 //
-// ใช้งาน: Inject ผ่าน Constructor ใน Service
+// Usage: injected via constructor in service classes
 //   public class ArticleService(AppDbContext db) { ... }
 // ============================================================
 using CSNews.Models.Entities;
@@ -14,8 +14,7 @@ namespace CSNews.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    // ── DbSet = ตารางในฐานข้อมูล ─────────────────────────────
-    // db.Users.Where(...), db.Articles.Include(...) ฯลฯ
+    // --- DbSets = database tables ---
     public DbSet<User> Users => Set<User>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<Category> Categories => Set<Category>();
@@ -28,10 +27,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(mb);
 
-        // ArticleTag ใช้ Composite PK (ไม่มี Id ของตัวเอง)
+        // ArticleTag uses composite PK (no standalone Id)
         mb.Entity<ArticleTag>().HasKey(at => new { at.ArticleId, at.TagId });
 
-        // Restrict = ลบ User/Category ไม่ได้ถ้ายังมี Article ผูกอยู่
+        // Restrict delete — cannot remove User/Category while articles reference them
         mb.Entity<Article>()
             .HasOne(a => a.Author).WithMany(u => u.Articles)
             .HasForeignKey(a => a.AuthorId).OnDelete(DeleteBehavior.Restrict);
@@ -44,13 +43,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(c => c.User).WithMany(u => u.Comments)
             .HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Restrict);
 
-        // Unique Index — ป้องกัน duplicate
+        // Unique indexes — prevent duplicates
         mb.Entity<User>().HasIndex(u => u.Email).IsUnique();
         mb.Entity<User>().HasIndex(u => u.Username).IsUnique();
         mb.Entity<Article>().HasIndex(a => a.Slug).IsUnique();
         mb.Entity<Category>().HasIndex(c => c.Slug).IsUnique();
 
-        // Seed หมวดหมู่เริ่มต้น (ใส่ตอน migration ครั้งแรก)
+        // Seed default categories (applied on first migration)
         var t = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         mb.Entity<Category>().HasData(
             new Category { Id = 1, Name = "ข่าวทั่วไป", Slug = "general", IsActive = true, CreatedAt = t },

@@ -1,8 +1,11 @@
 // ============================================================
-// Services/UserService.cs — Business Logic ของจัดการผู้ใช้
+// Services/UserService.cs — User management business logic
 //
-// ย้าย Logic จาก UsersController มาไว้ใน Service Layer
-// เพื่อให้ Controller ทำหน้าที่แค่รับ Request → เรียก Service → ส่ง Response
+// Handles admin-level user operations:
+//   GetAll        : paginated user list with role counts
+//   ChangeRole    : update a user's role
+//   ToggleSuspend : activate/deactivate a user account
+//   Delete        : permanently remove a user
 // ============================================================
 using CSNews.Data;
 using CSNews.Models.DTOs;
@@ -26,8 +29,8 @@ public class UserService(AppDbContext db) : IUserService
     {
         var q     = db.Users.OrderByDescending(u => u.CreatedAt);
         var total = await q.CountAsync();
-        
-        // นับจำนวน Admin และ Editor ทั้งหมด (ไม่เกี่ยวกะ pagination)
+
+        // Count Admin and Editor totals (independent of pagination)
         var adminCount  = await db.Users.CountAsync(u => u.Role == "Admin");
         var editorCount = await db.Users.CountAsync(u => u.Role == "Editor");
 
@@ -44,13 +47,13 @@ public class UserService(AppDbContext db) : IUserService
     public async Task<UserResponse> ChangeRoleAsync(int id, string role, int myId)
     {
         if (id == myId)
-            throw new InvalidOperationException("ไม่สามารถเปลี่ยน Role ของตัวเองได้");
+            throw new InvalidOperationException("Cannot change your own role");
 
         if (!AllowedRoles.Contains(role))
-            throw new ArgumentException($"Role ต้องเป็น: {string.Join(", ", AllowedRoles)}");
+            throw new ArgumentException($"Role must be one of: {string.Join(", ", AllowedRoles)}");
 
         var user = await db.Users.FindAsync(id)
-            ?? throw new KeyNotFoundException("ไม่พบผู้ใช้");
+            ?? throw new KeyNotFoundException("User not found");
 
         user.Role = role;
         await db.SaveChangesAsync();
@@ -61,10 +64,10 @@ public class UserService(AppDbContext db) : IUserService
     public async Task<UserResponse> ToggleSuspendAsync(int id, int myId)
     {
         if (id == myId)
-            throw new InvalidOperationException("ไม่สามารถระงับ Account ตัวเองได้");
+            throw new InvalidOperationException("Cannot suspend your own account");
 
         var user = await db.Users.FindAsync(id)
-            ?? throw new KeyNotFoundException("ไม่พบผู้ใช้");
+            ?? throw new KeyNotFoundException("User not found");
 
         user.IsActive = !user.IsActive;
         await db.SaveChangesAsync();
@@ -75,10 +78,10 @@ public class UserService(AppDbContext db) : IUserService
     public async Task DeleteAsync(int id, int myId)
     {
         if (id == myId)
-            throw new InvalidOperationException("ลบ Account ตัวเองไม่ได้");
+            throw new InvalidOperationException("Cannot delete your own account");
 
         var user = await db.Users.FindAsync(id)
-            ?? throw new KeyNotFoundException("ไม่พบผู้ใช้");
+            ?? throw new KeyNotFoundException("User not found");
 
         db.Users.Remove(user);
         await db.SaveChangesAsync();
