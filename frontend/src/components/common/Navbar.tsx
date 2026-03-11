@@ -45,9 +45,9 @@ export function Navbar({ user, onLogout }: NavbarProps) {
 
       <div className="px-6 h-14 flex items-center justify-between gap-4">
         <Link to="/"
-          className="text-2xl font-black tracking-tight text-white hover:text-amber-400 transition-colors"
+          className="text-2xl font-black tracking-tight text-white transition-colors"
           style={{ fontFamily: "'Playfair Display',serif" }}>
-          CSNews
+          <span className="text-amber-400">CS</span>News
         </Link>
 
         <nav className="hidden md:flex gap-1 flex-1 justify-center" style={{ fontFamily: "'DM Sans',sans-serif" }}>

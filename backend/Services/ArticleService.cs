@@ -28,6 +28,7 @@ public interface IArticleService
     Task DeleteAsync(int id, int userId, string role);
     Task PublishAsync(int id);
     Task<PagedResponse<ArticleListResponse>> GetMyArticlesAsync(int userId, int page, int pageSize, string? status);
+    Task<List<ArticleListResponse>> GetTrendingAsync(int top = 3);
 }
 
 public class ArticleService(AppDbContext db) : IArticleService
@@ -227,6 +228,20 @@ public class ArticleService(AppDbContext db) : IArticleService
             q = q.Where(a => a.Status == status);
 
         return await ToPagedAsync(q.OrderByDescending(a => a.CreatedAt), page, pageSize);
+    }
+
+    // --- Trending: top articles by view count ---
+    public async Task<List<ArticleListResponse>> GetTrendingAsync(int top = 3)
+    {
+        return await db.Articles
+            .Include(a => a.Author)
+            .Include(a => a.Category)
+            .Include(a => a.ArticleTags).ThenInclude(at => at.Tag)
+            .Where(a => a.Status == "Published")
+            .OrderByDescending(a => a.ViewCount)
+            .Take(top)
+            .Select(a => ToListDto(a))
+            .ToListAsync();
     }
 
     // --- Private helpers ---

@@ -32,6 +32,10 @@ export const articleApi = {
     search?: string;
   }) => unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles', { params })),
 
+  /** Public: fetch top trending articles. */
+  getTrending: (top: number = 3) =>
+    unwrap<ArticleListItem[]>(axiosClient.get(`/articles/trending?top=${top}`)),
+
   /** Admin/Editor: fetch articles of all statuses. */
   getAllAdmin: (params?: { page?: number; pageSize?: number; status?: string }) =>
     unwrap<PagedResult<ArticleListItem>>(axiosClient.get('/articles/admin', { params })),

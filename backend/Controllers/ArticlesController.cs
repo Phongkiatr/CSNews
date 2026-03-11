@@ -28,6 +28,15 @@ public class ArticlesController(IArticleService articles) : ControllerBase
         var result = await articles.GetPublishedAsync(page, pageSize, categoryId, search);
         return Ok(new ApiResponse<PagedResponse<ArticleListResponse>>(true, result));
     }
+    // GET /api/articles/trending?top=3
+    // Public — top articles by view count
+    [HttpGet("trending")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetTrending([FromQuery] int top = 3)
+    {
+        var result = await articles.GetTrendingAsync(top);
+        return Ok(new ApiResponse<List<ArticleListResponse>>(true, result));
+    }
 
     // GET /api/articles/admin
     // GET /api/articles/admin?status=Draft&page=1
