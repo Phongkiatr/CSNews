@@ -36,12 +36,12 @@ export function Navbar({ user, onLogout }: NavbarProps) {
 
   return (
     <header className="bg-slate-950 text-white sticky top-0 z-50 border-b border-slate-800">
-      <div className="border-b border-slate-800 px-6 py-1.5 flex justify-between items-center"
+      {/* <div className="border-b border-slate-800 px-6 py-1.5 flex justify-between items-center"
         style={{ fontFamily: "'DM Mono',monospace", fontSize: '0.7rem', color: '#94a3b8' }}>
         <span>CS News Platform</span>
         <span className="font-medium tracking-widest" style={{ color: '#f59e0b' }}>CSNews</span>
         <span>Connected to .NET API</span>
-      </div>
+      </div> */}
 
       <div className="px-6 h-14 flex items-center justify-between gap-4">
         <Link to="/"
