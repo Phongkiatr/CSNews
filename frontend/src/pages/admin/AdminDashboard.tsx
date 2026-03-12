@@ -386,7 +386,7 @@ export function AdminDashboard() {
                             </td>
                             <td className="px-5 py-3.5">
                               <div className="flex gap-1.5">
-                                {a.status === 'Draft' && (
+                                {(a.status === 'Draft' || a.status === 'Archived') && (
                                   <button onClick={() => handlePublish(a.id)}
                                     className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg hover:bg-emerald-500/25 transition-colors font-medium">
                                     เผยแพร่

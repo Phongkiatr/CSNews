@@ -199,7 +199,7 @@ export function MyArticlesPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 flex-shrink-0">
-                {a.status === 'Draft' && (
+                {(a.status === 'Draft' || a.status === 'Archived') && (
                   <button onClick={() => handlePublish(a.id)}
                     className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 transition-colors font-semibold flex items-center gap-1">
                     <span className="la las la-rocket text-xs"></span>
